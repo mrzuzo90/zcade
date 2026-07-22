@@ -247,11 +247,12 @@ All projects are stored in a human-readable, version-controlled JSON format:
 
 ## Development Roadmap (Phases)
 
-### **Phase 1: Foundation & Canvas Infrastructure**
-- Tauri 2.0 + React 19 setup
-- Infinite grid canvas with zoom/pan/snap-to-grid
-- Draggable component symbols with rotation and pin anchors
-- **Command**: `npm run dev` (Tauri dev window)
+### **Phase 1: Foundation & Canvas Infrastructure** ✅ Done
+- [x] Tauri 2.0 + React 19 setup
+- [x] Infinite grid canvas with zoom/pan/snap-to-grid
+- [x] Draggable component symbols with rotation and pin anchors
+- **Command**: `npm run dev` (Vite web) / `npm run tauri dev` (Tauri desktop window)
+- See [Implementation Status](#implementation-status-phase-1) below for what was actually built and key decisions made.
 
 ### **Phase 2: Wiring Engine & Topological Graph**
 - Point-to-point wire routing with orthogonal lines
@@ -293,6 +294,32 @@ All projects are stored in a human-readable, version-controlled JSON format:
 **Weeks 7–9 (V1.0 Release — Full-Featured)**:
 - Phases 5, 6: 2D process simulation, PDF export, multi-platform packaging (Windows/macOS/Linux)
 - Feature-complete for educational and industrial SME use
+
+---
+
+## Implementation Status (Phase 1)
+
+Completed 2026-07-22. Scaffolded from scratch (empty repo) with `npm create vite@latest . -- --template react-ts`, then `npx tauri init`, `git init`, first commit `68d7383`.
+
+**Environment**: Rust toolchain wasn't present on this machine — installed via `brew install rustup-init` (keg-only formula named `rustup`) + `rustup toolchain install stable`. `PATH` for `/opt/homebrew/opt/rustup/bin` was added to `~/.zshrc` so `cargo`/`rustc` are available in future shells.
+
+**What's in place**:
+- `src/store/canvas.ts` — Zustand store: components, selection, scale/position, `GRID_SIZE = 10`px, `snapToGrid()`. All mutations (`addComponent`, `moveComponent`, `rotateComponent`, `zoomAt`, …) live here, not in components.
+- `src/types/circuit.ts` — `ComponentDefinition`/`ComponentInstance`/`PinDefinition` etc. Pin offsets and component footprints are in **px directly** (not abstract grid units) — simpler to render with Konva since `GRID_SIZE` is a fixed constant.
+- `src/components/symbols/library.ts` — starter `COMPONENT_LIBRARY` with 6 types (contactor_3p, push_button_no/nc, motor_3p, circuit_breaker_3p, lamp), pins per the pinout convention in this doc.
+- `src/components/symbols/ComponentSymbol.tsx` — renders one instance. Rotation pivots around the symbol's **center**, not top-left corner (Konva `Group` uses `offsetX/Y = width/2, height/2` with `x/y` shifted to match) — a naive `rotation={instance.rotation}` at the top-left origin swings the box out of place; keep this pattern for any new symbol rendering.
+- `src/components/Canvas/CanvasStage.tsx` — Konva `Stage`, pan via native stage dragging, zoom via wheel centered on pointer (`zoomAt`), drop target for drag-and-drop from the palette (converts client coords → world coords using current scale/position). Keyboard: `R` rotate selected (`Shift+R` reverse), `Delete`/`Backspace` remove selected.
+- `src/components/Canvas/GridLayer.tsx` — only draws grid lines intersecting the viewport; step size auto-multiplies/divides by 5 to stay legible (12–120px on screen) as you zoom.
+- `src/components/Canvas/ComponentPalette.tsx` — sidebar; components are draggable (native HTML5 DnD, `dataTransfer` key `application/x-cadesimu-component`) onto the canvas, or click to add at a fixed point.
+- Tailwind v4 (`@tailwindcss/vite` plugin, no `tailwind.config.js` needed) — dark UI by default (`bg-gray-900`/`gray-950` etc.), no light theme yet.
+- Path alias `@/*` → `src/*`, wired in both `vite.config.ts` (`resolve.alias`) and `tsconfig.app.json` (`paths`, requires `baseUrl` + `ignoreDeprecations: "6.0"` on current TS version).
+- ESLint (flat config) + Prettier replace the Vite scaffold's default Oxlint — matches the `npm run lint`/`npm run format` split this doc specifies.
+- Vitest + Testing Library configured via `vite.config.ts` (`import { defineConfig } from 'vitest/config'`, not `'vite'`, so the `test` key type-checks); `tests/integration/canvas-store.test.ts` covers the canvas store (add/move/rotate/remove/zoom/snap).
+- `src-tauri/tauri.conf.json`: identifier `com.opencade.cadesimu-next`, window 1440×900 (min 1024×640).
+
+**Not yet built** (left for later phases, do not assume these exist): wire drawing/routing, junction nodes, the topological graph builder (`src/engine/graph.ts` — directory exists, empty), any solver, undo/redo, `.cadesimu.json` load/save, light theme.
+
+**Verified working**: `npm run type-check`, `npm run lint`, `npm run test` (7/7 passing), `npm run build`, and `cargo check` in `src-tauri/` all pass. Manually exercised in Chrome via `npm run dev` (add/drag/rotate/select/deselect/delete, palette drag-and-drop, pan, zoom) — not yet run through `npm run tauri dev` (native window), which does a full Rust build and wasn't exercised end-to-end this session.
 
 ---
 
