@@ -1,0 +1,23 @@
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    3-phase motor. Circle body (drawn as two arcs — the path-only-primitives
+    rule) + 3 terminal stubs down to U/V/W. The animated rotor line is drawn
+    separately in ComponentSymbol.tsx as a plain Konva shape (see CLAUDE.md
+    Phase 3 notes: it's rAF-driven cosmetic state, not simulation truth, so
+    it deliberately stays outside the static symbol asset).
+  -->
+  <g id="layer:base">
+    <path d="M15,0 L15,8" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M30,0 L30,8" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M45,0 L45,8" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M30,6 A26,26 0 1,0 30,58 A26,26 0 1,0 30,6 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:energized">
+    <path d="M30,6 A26,26 0 1,0 30,58 A26,26 0 1,0 30,6 Z" fill="#f59e0b" opacity="0.15"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="U" data-pin-kind="power" cx="15" cy="0" r="1"/>
+    <circle data-pin-id="V" data-pin-kind="power" cx="30" cy="0" r="1"/>
+    <circle data-pin-id="W" data-pin-kind="power" cx="45" cy="0" r="1"/>
+  </g>
+</svg>
