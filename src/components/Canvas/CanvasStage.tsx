@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Layer, Stage } from 'react-konva'
 import type Konva from 'konva'
+import type { Point } from '@/types/circuit'
 import { useCanvasStore } from '@/store/canvas'
+import { useWireStore } from '@/store/wires'
+import { useSimulationStore } from '@/store/simulation'
 import { GridLayer } from '@/components/Canvas/GridLayer'
+import { WireLayer } from '@/components/Canvas/WireLayer'
 import { ComponentSymbol } from '@/components/symbols/ComponentSymbol'
 
 const ZOOM_STEP = 1.08
@@ -11,6 +15,7 @@ export function CanvasStage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<Konva.Stage>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
+  const [previewPoint, setPreviewPoint] = useState<Point | null>(null)
 
   const components = useCanvasStore((s) => s.components)
   const order = useCanvasStore((s) => s.order)
@@ -28,6 +33,15 @@ export function CanvasStage() {
   const removeComponent = useCanvasStore((s) => s.removeComponent)
   const addComponent = useCanvasStore((s) => s.addComponent)
 
+  const pendingFrom = useWireStore((s) => s.pendingFrom)
+  const selectedWireId = useWireStore((s) => s.selectedWireId)
+  const cancelWire = useWireStore((s) => s.cancelWire)
+  const selectWire = useWireStore((s) => s.selectWire)
+  const removeWire = useWireStore((s) => s.removeWire)
+  const removeWiresForComponent = useWireStore((s) => s.removeWiresForComponent)
+
+  const isRunning = useSimulationStore((s) => s.isRunning)
+
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -43,17 +57,32 @@ export function CanvasStage() {
     function onKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
+      if (isRunning) return
+
+      if (e.key === 'Escape') {
+        if (pendingFrom) cancelWire()
+        return
+      }
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedId) {
+          e.preventDefault()
+          if (pendingFrom?.componentId === selectedId) cancelWire()
+          removeWiresForComponent(selectedId)
+          removeComponent(selectedId)
+        } else if (selectedWireId) {
+          e.preventDefault()
+          removeWire(selectedWireId)
+        }
+        return
+      }
       if (!selectedId) return
       if (e.key === 'r' || e.key === 'R') {
         rotateComponent(selectedId, e.shiftKey ? -1 : 1)
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault()
-        removeComponent(selectedId)
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [selectedId, rotateComponent, removeComponent])
+  }, [selectedId, selectedWireId, pendingFrom, isRunning, rotateComponent, removeComponent, removeWire, removeWiresForComponent, cancelWire])
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
@@ -71,11 +100,27 @@ export function CanvasStage() {
   }
 
   const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
-    if (e.target === e.target.getStage()) selectComponent(null)
+    if (e.target !== e.target.getStage()) return
+    if (pendingFrom) {
+      cancelWire()
+      return
+    }
+    selectComponent(null)
+    selectWire(null)
+  }
+
+  const handleStageMouseMove = () => {
+    if (!pendingFrom) return
+    const stage = stageRef.current
+    if (!stage) return
+    const pointer = stage.getPointerPosition()
+    if (!pointer) return
+    setPreviewPoint({ x: (pointer.x - position.x) / scale, y: (pointer.y - position.y) / scale })
   }
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
+    if (isRunning) return
     const type = e.dataTransfer.getData('application/x-cadesimu-component')
     if (!type) return
     const stage = stageRef.current
@@ -104,15 +149,17 @@ export function CanvasStage() {
         y={position.y}
         scaleX={scale}
         scaleY={scale}
-        draggable
+        draggable={!pendingFrom}
         onWheel={handleWheel}
         onDragEnd={handleDragEnd}
         onClick={handleStageClick}
         onTap={handleStageClick}
+        onMouseMove={handleStageMouseMove}
       >
         {showGrid && (
           <GridLayer scale={scale} position={position} width={size.width} height={size.height} />
         )}
+        <WireLayer components={components} previewPoint={previewPoint} />
         <Layer>
           {order.map((id) => {
             const instance = components[id]
@@ -123,7 +170,10 @@ export function CanvasStage() {
                 instance={instance}
                 selected={id === selectedId}
                 snapEnabled={snapEnabled}
-                onSelect={selectComponent}
+                onSelect={(componentId) => {
+                  selectComponent(componentId)
+                  selectWire(null)
+                }}
                 onMove={moveComponent}
               />
             )

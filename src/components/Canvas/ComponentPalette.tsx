@@ -1,5 +1,6 @@
 import { COMPONENT_LIBRARY } from '@/components/symbols/library'
 import { useCanvasStore } from '@/store/canvas'
+import { useSimulationStore } from '@/store/simulation'
 
 const CATEGORY_LABEL: Record<string, string> = {
   electrical: 'Eléctrico',
@@ -9,6 +10,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 export function ComponentPalette() {
   const addComponent = useCanvasStore((s) => s.addComponent)
+  const isRunning = useSimulationStore((s) => s.isRunning)
 
   const grouped = Object.values(COMPONENT_LIBRARY).reduce<Record<string, (typeof COMPONENT_LIBRARY)[string][]>>(
     (acc, def) => {
@@ -28,13 +30,14 @@ export function ComponentPalette() {
             <button
               key={def.type}
               type="button"
-              draggable
+              draggable={!isRunning}
+              disabled={isRunning}
               onDragStart={(e) => {
                 e.dataTransfer.setData('application/x-cadesimu-component', def.type)
                 e.dataTransfer.effectAllowed = 'copy'
               }}
-              onClick={() => addComponent(def.type, 200, 200)}
-              className="flex items-center gap-2 rounded border border-gray-800 bg-gray-900 px-2 py-1.5 text-left text-sm hover:border-blue-500 hover:bg-gray-800 active:cursor-grabbing"
+              onClick={() => !isRunning && addComponent(def.type, 200, 200)}
+              className="flex items-center gap-2 rounded border border-gray-800 bg-gray-900 px-2 py-1.5 text-left text-sm hover:border-blue-500 hover:bg-gray-800 active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-gray-800 disabled:hover:bg-gray-900"
               title={`Arrastra al lienzo, o haz clic para añadir. Tipo: ${def.type}`}
             >
               <span className="flex h-6 w-6 items-center justify-center rounded bg-gray-800 text-[10px] font-semibold text-gray-300">

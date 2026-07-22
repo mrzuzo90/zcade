@@ -21,6 +21,14 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: 'A1', offset: { x: 30, y: 0 }, kind: 'coil', linkedTo: 'coil' },
       { id: 'A2', offset: { x: 30, y: 80 }, kind: 'coil', linkedTo: 'coil' },
     ],
+    // All three power poles are driven by this same instance's own coil (A1-A2) —
+    // a separate remotely-wired contact block sharing the same reference tag
+    // isn't modeled yet, see engine/solver.ts scope note.
+    contacts: [
+      { pins: ['1', '2'], behavior: 'no', control: 'coil' },
+      { pins: ['3', '4'], behavior: 'no', control: 'coil' },
+      { pins: ['5', '6'], behavior: 'no', control: 'coil' },
+    ],
   },
 
   push_button_no: {
@@ -33,6 +41,7 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: '13', offset: { x: 0, y: 10 }, kind: 'auxiliary_no' },
       { id: '14', offset: { x: 40, y: 10 }, kind: 'auxiliary_no' },
     ],
+    contacts: [{ pins: ['13', '14'], behavior: 'no', control: 'pressed' }],
   },
 
   push_button_nc: {
@@ -45,6 +54,7 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: '21', offset: { x: 0, y: 10 }, kind: 'auxiliary_nc' },
       { id: '22', offset: { x: 40, y: 10 }, kind: 'auxiliary_nc' },
     ],
+    contacts: [{ pins: ['21', '22'], behavior: 'nc', control: 'pressed' }],
   },
 
   motor_3p: {
@@ -74,6 +84,12 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: '5', offset: { x: 0, y: 30 }, kind: 'power' },
       { id: '6', offset: { x: 60, y: 30 }, kind: 'power' },
     ],
+    // No trip/OFF modeling yet — always conducts, present purely for correct pinout/labeling.
+    contacts: [
+      { pins: ['1', '2'], behavior: 'always_closed' },
+      { pins: ['3', '4'], behavior: 'always_closed' },
+      { pins: ['5', '6'], behavior: 'always_closed' },
+    ],
   },
 
   lamp: {
@@ -85,6 +101,31 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     pins: [
       { id: '1', offset: { x: 15, y: 0 }, kind: 'signal' },
       { id: '2', offset: { x: 15, y: 30 }, kind: 'signal' },
+    ],
+  },
+
+  power_source_3p: {
+    type: 'power_source_3p',
+    label: 'L1-3',
+    category: 'electrical',
+    width: 60,
+    height: 30,
+    pins: [
+      { id: 'L1', offset: { x: 0, y: 30 }, kind: 'power', potential: 'L1' },
+      { id: 'L2', offset: { x: 30, y: 30 }, kind: 'power', potential: 'L2' },
+      { id: 'L3', offset: { x: 60, y: 30 }, kind: 'power', potential: 'L3' },
+    ],
+  },
+
+  power_source_dc: {
+    type: 'power_source_dc',
+    label: '24V',
+    category: 'electrical',
+    width: 40,
+    height: 30,
+    pins: [
+      { id: '+24V', offset: { x: 0, y: 30 }, kind: 'power', potential: 'DC_POS' },
+      { id: '0V', offset: { x: 40, y: 30 }, kind: 'power', potential: 'DC_0' },
     ],
   },
 }
