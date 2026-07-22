@@ -8,8 +8,32 @@ export type MotorDirection = 'CW' | 'CCW' | 'unknown'
 export interface ComponentRuntimeState {
   /** User input: true while a pushbutton is physically held down. */
   pressed?: boolean
+  /**
+   * User input: true while a manual reset action is being applied this tick
+   * (e-stop twist-reset). Same "caller sets it, solver just carries it
+   * forward" shape as `pressed` — see the top-of-tick seeding in
+   * evaluateCircuit — but modeled as a separate input because a latching
+   * e-stop genuinely has two distinct physical actions (push-to-trip,
+   * twist-to-reset), not one momentary button.
+   */
+  resetRequested?: boolean
+  /**
+   * User input: manual thermal-overload trip toggle (operate-mode). Unlike
+   * `pressed`, this is a persistent toggle, not a momentary hold — the
+   * caller sets it true to simulate an overload and false to reset, with no
+   * solver-side derivation needed (contrast with `latched` below).
+   */
+  tripped?: boolean
   /** Derived output: true when a component with coil pins has a closed loop across two distinct potentials. */
   coilEnergized?: boolean
+  /**
+   * Derived output: true once a component with a 'latched'-controlled
+   * contact segment (e.g. a latching emergency stop) has been triggered via
+   * `pressed`; stays true across ticks — regardless of `pressed` reverting
+   * to false — until `resetRequested` clears it. See the derivation in
+   * evaluateCircuit for why this can't oscillate within the 8-iteration cap.
+   */
+  latched?: boolean
   /** Derived output: true when a 2-pin signal load (lamp) sees two distinct potentials across its pins. */
   lit?: boolean
   /** Derived output: true when a 3-pin power load (motor) has at least two phases present. */
@@ -27,10 +51,46 @@ const MAX_ITERATIONS = 8
 /** Canonical forward phase rotation; any cyclic rotation of it is CCW, any cyclic rotation of its reverse is CW. */
 const FORWARD_SEQUENCE: PotentialTag[] = ['L1', 'L2', 'L3']
 
-function isSegmentClosed(segment: ContactSegment, state: ComponentRuntimeState | undefined): boolean {
+/** Which runtime field on `controlState` drives this segment. Defaults to 'coil' — matches the pre-Phase-A behavior where an untagged `control` meant "coil". */
+function isSegmentClosed(segment: ContactSegment, controlState: ComponentRuntimeState | undefined): boolean {
   if (segment.behavior === 'always_closed') return true
-  const active = segment.control === 'pressed' ? (state?.pressed ?? false) : (state?.coilEnergized ?? false)
+  let active: boolean
+  switch (segment.control) {
+    case 'pressed':
+      active = controlState?.pressed ?? false
+      break
+    case 'tripped':
+      active = controlState?.tripped ?? false
+      break
+    case 'latched':
+      active = controlState?.latched ?? false
+      break
+    case 'coil':
+    default:
+      active = controlState?.coilEnergized ?? false
+      break
+  }
   return segment.behavior === 'no' ? active : !active
+}
+
+/**
+ * Resolves which component instance's state a 'coil'-controlled segment
+ * should actually read — see the `ContactSegment.linkedTo` doc comment in
+ * types/circuit.ts for the full resolution order and rationale. Only ever
+ * called for `control === 'coil'` segments; every other control kind is
+ * always self-referential (a pushbutton's own `pressed`, a thermal relay's
+ * own `tripped`, an e-stop's own `latched`).
+ */
+function resolveCoilControlState(
+  segment: ContactSegment,
+  instance: ComponentInstance,
+  components: Record<string, ComponentInstance>,
+  states: Record<string, ComponentRuntimeState>,
+): ComponentRuntimeState | undefined {
+  const tag = (instance.properties?.linkedTo as string | undefined) ?? segment.linkedTo
+  if (!tag) return states[instance.id]
+  const target = Object.values(components).find((other) => other.id !== instance.id && other.label === tag)
+  return target ? states[target.id] : states[instance.id]
 }
 
 function potentialsEqual(a: PotentialTag[], b: PotentialTag[]): boolean {
@@ -75,6 +135,18 @@ function motorDirection(tags: (PotentialTag | undefined)[]): MotorDirection {
  * and iterating a few rounds reproduces real relay-logic settling —
  * including seal-in circuits staying latched after the start button is
  * released, and dropping out only when the control path is actually broken.
+ *
+ * Phase A extension — cross-instance linked contacts: the same relaxation
+ * now also resolves 'coil'-controlled segments belonging to a DIFFERENT
+ * component instance than the one whose coilEnergized they read (see
+ * `resolveCoilControlState` / `ContactSegment.linkedTo`). This is exactly
+ * as safe as the existing self-referential seal-in case, because it reads
+ * from the same last-iteration `states` snapshot the self-referential case
+ * always used — there is no new category of feedback loop, only a longer
+ * one (through another instance's coil instead of this instance's own),
+ * so the existing 8-iteration cap and prior-tick seeding still apply
+ * unchanged (Risk 1 mitigation; see the oscillation/stability test in
+ * tests/engine/solver.test.ts).
  */
 export function evaluateCircuit(
   components: Record<string, ComponentInstance>,
@@ -88,7 +160,10 @@ export function evaluateCircuit(
   for (const id of Object.keys(components)) {
     states[id] = {
       pressed: previousStates[id]?.pressed ?? false,
+      resetRequested: previousStates[id]?.resetRequested ?? false,
+      tripped: previousStates[id]?.tripped ?? false,
       coilEnergized: previousStates[id]?.coilEnergized ?? false,
+      latched: previousStates[id]?.latched ?? false,
     }
   }
 
@@ -110,7 +185,9 @@ export function evaluateCircuit(
     for (const instance of Object.values(components)) {
       const def = getComponentDefinition(instance.type)
       for (const segment of def.contacts ?? []) {
-        if (isSegmentClosed(segment, states[instance.id])) {
+        const controlState =
+          segment.control === 'coil' ? resolveCoilControlState(segment, instance, components, states) : states[instance.id]
+        if (isSegmentClosed(segment, controlState)) {
           uf.union(`${instance.id}:${segment.pins[0]}`, `${instance.id}:${segment.pins[1]}`)
         }
       }
@@ -136,7 +213,25 @@ export function evaluateCircuit(
     for (const instance of Object.values(components)) {
       const def = getComponentDefinition(instance.type)
       const prior = states[instance.id]
-      const next: ComponentRuntimeState = { pressed: prior.pressed, coilEnergized: prior.coilEnergized }
+      const next: ComponentRuntimeState = {
+        pressed: prior.pressed,
+        resetRequested: prior.resetRequested,
+        tripped: prior.tripped,
+        coilEnergized: prior.coilEnergized,
+        latched: prior.latched,
+      }
+
+      // Derived latch (e.g. a latching emergency stop): once `pressed`
+      // trips it, it stays true across ticks regardless of `pressed`
+      // reverting, until `resetRequested` explicitly clears it. Reading
+      // `prior` (last iteration's/previous tick's value) each time is a
+      // monotonic OR gated by a fixed-for-the-tick reset flag, so this
+      // settles in at most one extra iteration — no oscillation risk.
+      const hasLatchingContact = def.contacts?.some((c) => c.control === 'latched') ?? false
+      if (hasLatchingContact) {
+        next.latched = prior.resetRequested ? false : (prior.latched ?? false) || (prior.pressed ?? false)
+        if (next.latched !== prior.latched) changed = true
+      }
 
       const coilPins = def.pins.filter((p) => p.kind === 'coil')
       if (coilPins.length === 2) {

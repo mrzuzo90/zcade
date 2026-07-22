@@ -19,7 +19,13 @@ export interface PinDefinition {
   /** Position relative to the component's own (unrotated) top-left, in px. */
   offset: Point
   kind: PinKind
-  /** For coil/contact pairs sharing a control tag (e.g. "KM1"). */
+  /**
+   * Cosmetic/bookkeeping pin-pair tag (e.g. both coil pins of one instance
+   * tagged "coil" to mark them as a pair) — NOT the cross-instance solver
+   * mechanism. For that, see `ContactSegment.linkedTo` below, a distinct
+   * field with a distinct (and more important) meaning; the shared name is
+   * unfortunate but each is documented at its own declaration.
+   */
   linkedTo?: string
   /** Set only on power-source pins: the fixed potential this pin always carries (see engine/solver.ts). */
   potential?: PotentialTag
@@ -32,8 +38,45 @@ export interface ContactSegment {
   /** The two pin ids (within the same component) this segment bridges when closed. */
   pins: [string, string]
   behavior: ContactBehavior
-  /** Runtime state key that drives 'no'/'nc' segments — ignored for 'always_closed'. */
-  control?: 'pressed' | 'coil'
+  /**
+   * Runtime state key that drives 'no'/'nc' segments — ignored for 'always_closed'.
+   * - 'pressed': momentary, driven directly by this instance's own `pressed` input.
+   * - 'coil': driven by a coil-energized state — normally *this instance's own*
+   *   `coilEnergized` (e.g. a contactor's own power poles), but see `linkedTo`
+   *   below for the cross-instance case (aux contact blocks).
+   * - 'tripped': driven by this instance's own `tripped` input (thermal overload).
+   * - 'latched': driven by this instance's own derived `latched` state (e.g. a
+   *   latching emergency stop) — see engine/solver.ts's latch derivation.
+   */
+  control?: 'pressed' | 'coil' | 'tripped' | 'latched'
+  /**
+   * Cross-instance control tag — only consulted when `control === 'coil'`.
+   * A physically separate auxiliary contact block (its own ComponentInstance,
+   * with no coil pins of its own) can be wired anywhere in a schematic and
+   * still track a *different* instance's coil: at solve time, the segment's
+   * effective coil state is read from whichever OTHER component instance's
+   * `label` equals the resolved tag, instead of this instance's own (absent,
+   * for an aux block) coilEnergized. This is what makes a remotely-wired
+   * "KM1" aux block follow contactor KM1's own coil — CLAUDE.md's Contactor
+   * Logic Example ("update linked auxiliary contacts with tag 'KM1'").
+   *
+   * Resolution order (see engine/solver.ts resolveCoilControlState()):
+   *   1. `instance.properties.linkedTo` (a string) — set per-instance, since
+   *      every instance of the SAME aux-block type follows a DIFFERENT
+   *      contactor, so the tag can never be a fixed value on the shared
+   *      ComponentDefinition alone.
+   *   2. This field, `ContactSegment.linkedTo` — a definition-level fallback/
+   *      default, useful for a component type where the tag is always the
+   *      same (or for tests/fixtures that don't wire up `properties`).
+   *   3. Neither set → falls back to this instance's own state, which is
+   *      exactly today's (pre-Phase-A) behavior for contactor_3p's own power
+   *      poles — zero regression risk for existing circuits.
+   * If a tag IS set but no instance carries that label, the segment simply
+   * never closes (safe-failure: an aux block with no coil pins of its own
+   * never has a true coilEnergized to fall back to, so a bad/typo'd tag
+   * fails open, not closed).
+   */
+  linkedTo?: string
 }
 
 export interface ComponentDefinition {
