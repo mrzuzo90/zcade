@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overscroll-behavior: none;
+  font-family: var(--font-sans);
+}
+
+canvas {
+  touch-action: none;
+}
