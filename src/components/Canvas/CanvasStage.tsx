@@ -5,6 +5,7 @@ import type { Point } from '@/types/circuit'
 import { useCanvasStore } from '@/store/canvas'
 import { useWireStore } from '@/store/wires'
 import { useSimulationStore } from '@/store/simulation'
+import { useHistoryStore } from '@/store/history'
 import { GridLayer } from '@/components/Canvas/GridLayer'
 import { WireLayer } from '@/components/Canvas/WireLayer'
 import { ComponentSymbol } from '@/components/symbols/ComponentSymbol'
@@ -58,6 +59,19 @@ export function CanvasStage() {
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
       if (isRunning) return
+
+      // Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z (or Ctrl+Y) redo — CORE (src/store/history.ts).
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) useHistoryStore.getState().redo()
+        else useHistoryStore.getState().undo()
+        return
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault()
+        useHistoryStore.getState().redo()
+        return
+      }
 
       if (e.key === 'Escape') {
         if (pendingFrom) cancelWire()

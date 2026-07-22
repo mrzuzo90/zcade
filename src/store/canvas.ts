@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { ComponentInstance, Rotation } from '@/types/circuit'
 import { getComponentDefinition } from '@/components/symbols/library'
+import { useHistoryStore, type Command } from '@/store/history'
 
 let nextId = 1
 function generateId(type: string) {
@@ -38,97 +39,239 @@ interface CanvasStore {
   toggleSnap: () => void
 }
 
-export const useCanvasStore = create<CanvasStore>((set, get) => ({
-  components: {},
-  order: [],
-  selectedId: null,
+type CanvasSetter = (updater: (state: CanvasStore) => Partial<CanvasStore>) => void
 
-  scale: 1,
-  position: { x: 0, y: 0 },
-  showGrid: true,
-  snapEnabled: true,
+// --- Commands ---------------------------------------------------------
+//
+// Content mutations (add/move/rotate/remove a component) go through the
+// command pattern (see src/store/history.ts) so every one of them is
+// undoable, per CLAUDE.md / roadmap Section 10.2. View state (scale,
+// position, grid/snap toggles) and pure selection are deliberately NOT
+// wrapped as commands: undoing a pan/zoom or a selection change isn't
+// meaningful CAD-editor behavior — the same reasoning the Phase 3 solver
+// used to keep simulation state out of history entirely.
 
-  addComponent: (type, x, y) => {
-    const def = getComponentDefinition(type)
-    const { snapEnabled } = get()
-    const id = generateId(type)
-    const instance: ComponentInstance = {
-      id,
-      type,
-      label: def.label,
-      x: snapEnabled ? snapToGrid(x) : x,
-      y: snapEnabled ? snapToGrid(y) : y,
-      rotation: 0,
-      properties: {},
-    }
-    set((state) => ({
-      components: { ...state.components, [id]: instance },
-      order: [...state.order, id],
-      selectedId: id,
+/** Rapid successive moves of the same component collapse into one undo step. */
+const MOVE_COALESCE_WINDOW_MS = 600
+
+class MoveComponentCommand implements Command {
+  readonly label = 'canvas.moveComponent'
+  readonly timestamp = Date.now()
+  private readonly id: string
+  private readonly from: { x: number; y: number }
+  private readonly to: { x: number; y: number }
+  private readonly set: CanvasSetter
+
+  constructor(id: string, from: { x: number; y: number }, to: { x: number; y: number }, set: CanvasSetter) {
+    this.id = id
+    this.from = from
+    this.to = to
+    this.set = set
+  }
+
+  private patch(pos: { x: number; y: number }) {
+    this.set((state) => {
+      const existing = state.components[this.id]
+      if (!existing) return {}
+      return { components: { ...state.components, [this.id]: { ...existing, x: pos.x, y: pos.y } } }
+    })
+  }
+
+  do() {
+    this.patch(this.to)
+  }
+
+  undo() {
+    this.patch(this.from)
+  }
+
+  coalesceWith(next: Command): Command | null {
+    if (!(next instanceof MoveComponentCommand)) return null
+    if (next.id !== this.id) return null
+    if (next.timestamp - this.timestamp > MOVE_COALESCE_WINDOW_MS) return null
+    return new MoveComponentCommand(this.id, this.from, next.to, this.set)
+  }
+}
+
+class RotateComponentCommand implements Command {
+  readonly label = 'canvas.rotateComponent'
+  private readonly id: string
+  private readonly from: Rotation
+  private readonly to: Rotation
+  private readonly set: CanvasSetter
+
+  constructor(id: string, from: Rotation, to: Rotation, set: CanvasSetter) {
+    this.id = id
+    this.from = from
+    this.to = to
+    this.set = set
+  }
+
+  private patch(rotation: Rotation) {
+    this.set((state) => {
+      const existing = state.components[this.id]
+      if (!existing) return {}
+      return { components: { ...state.components, [this.id]: { ...existing, rotation } } }
+    })
+  }
+
+  do() {
+    this.patch(this.to)
+  }
+
+  undo() {
+    this.patch(this.from)
+  }
+}
+
+class AddComponentCommand implements Command {
+  readonly label = 'canvas.addComponent'
+  private readonly instance: ComponentInstance
+  private readonly previousSelectedId: string | null
+  private readonly set: CanvasSetter
+
+  constructor(instance: ComponentInstance, previousSelectedId: string | null, set: CanvasSetter) {
+    this.instance = instance
+    this.previousSelectedId = previousSelectedId
+    this.set = set
+  }
+
+  do() {
+    this.set((state) => ({
+      components: { ...state.components, [this.instance.id]: this.instance },
+      order: [...state.order, this.instance.id],
+      selectedId: this.instance.id,
     }))
-    return id
-  },
+  }
 
-  moveComponent: (id, x, y) => {
-    const { snapEnabled } = get()
-    set((state) => {
-      const existing = state.components[id]
-      if (!existing) return state
-      return {
-        components: {
-          ...state.components,
-          [id]: {
-            ...existing,
-            x: snapEnabled ? snapToGrid(x) : x,
-            y: snapEnabled ? snapToGrid(y) : y,
-          },
-        },
-      }
-    })
-  },
-
-  rotateComponent: (id, direction = 1) => {
-    set((state) => {
-      const existing = state.components[id]
-      if (!existing) return state
-      const next = (((existing.rotation + direction * 90) % 360) + 360) % 360 as Rotation
-      return {
-        components: { ...state.components, [id]: { ...existing, rotation: next } },
-      }
-    })
-  },
-
-  removeComponent: (id) => {
-    set((state) => {
+  undo() {
+    this.set((state) => {
       const components = { ...state.components }
-      delete components[id]
+      delete components[this.instance.id]
       return {
         components,
-        order: state.order.filter((existingId) => existingId !== id),
-        selectedId: state.selectedId === id ? null : state.selectedId,
+        order: state.order.filter((id) => id !== this.instance.id),
+        selectedId: state.selectedId === this.instance.id ? this.previousSelectedId : state.selectedId,
       }
     })
-  },
+  }
+}
 
-  selectComponent: (id) => set({ selectedId: id }),
+class RemoveComponentCommand implements Command {
+  readonly label = 'canvas.removeComponent'
+  private readonly instance: ComponentInstance
+  /** Index in `order` at the time of removal, so undo reinserts it in place. */
+  private readonly index: number
+  private readonly previousSelectedId: string | null
+  private readonly set: CanvasSetter
 
-  setScale: (scale) => set({ scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale)) }),
-  setPosition: (position) => set({ position }),
+  constructor(instance: ComponentInstance, index: number, previousSelectedId: string | null, set: CanvasSetter) {
+    this.instance = instance
+    this.index = index
+    this.previousSelectedId = previousSelectedId
+    this.set = set
+  }
 
-  zoomAt: (pointer, deltaScale) => {
-    const { scale, position } = get()
-    const nextScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * deltaScale))
-    const worldX = (pointer.x - position.x) / scale
-    const worldY = (pointer.y - position.y) / scale
-    set({
-      scale: nextScale,
-      position: {
-        x: pointer.x - worldX * nextScale,
-        y: pointer.y - worldY * nextScale,
-      },
+  do() {
+    this.set((state) => {
+      const components = { ...state.components }
+      delete components[this.instance.id]
+      return {
+        components,
+        order: state.order.filter((id) => id !== this.instance.id),
+        selectedId: state.selectedId === this.instance.id ? null : state.selectedId,
+      }
     })
-  },
+  }
 
-  toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
-  toggleSnap: () => set((state) => ({ snapEnabled: !state.snapEnabled })),
-}))
+  undo() {
+    this.set((state) => {
+      if (state.components[this.instance.id]) return {}
+      const order = [...state.order]
+      order.splice(Math.min(this.index, order.length), 0, this.instance.id)
+      return {
+        components: { ...state.components, [this.instance.id]: this.instance },
+        order,
+        selectedId: this.previousSelectedId,
+      }
+    })
+  }
+}
+
+export const useCanvasStore = create<CanvasStore>((set, get) => {
+  const setter: CanvasSetter = (updater) => set(updater)
+
+  return {
+    components: {},
+    order: [],
+    selectedId: null,
+
+    scale: 1,
+    position: { x: 0, y: 0 },
+    showGrid: true,
+    snapEnabled: true,
+
+    addComponent: (type, x, y) => {
+      const def = getComponentDefinition(type)
+      const { snapEnabled, selectedId } = get()
+      const id = generateId(type)
+      const instance: ComponentInstance = {
+        id,
+        type,
+        label: def.label,
+        x: snapEnabled ? snapToGrid(x) : x,
+        y: snapEnabled ? snapToGrid(y) : y,
+        rotation: 0,
+        properties: {},
+      }
+      useHistoryStore.getState().execute(new AddComponentCommand(instance, selectedId, setter))
+      return id
+    },
+
+    moveComponent: (id, x, y) => {
+      const { snapEnabled, components } = get()
+      const existing = components[id]
+      if (!existing) return
+      const to = { x: snapEnabled ? snapToGrid(x) : x, y: snapEnabled ? snapToGrid(y) : y }
+      if (to.x === existing.x && to.y === existing.y) return
+      useHistoryStore.getState().execute(new MoveComponentCommand(id, { x: existing.x, y: existing.y }, to, setter))
+    },
+
+    rotateComponent: (id, direction = 1) => {
+      const existing = get().components[id]
+      if (!existing) return
+      const next = ((((existing.rotation + direction * 90) % 360) + 360) % 360) as Rotation
+      useHistoryStore.getState().execute(new RotateComponentCommand(id, existing.rotation, next, setter))
+    },
+
+    removeComponent: (id) => {
+      const { components, order, selectedId } = get()
+      const existing = components[id]
+      if (!existing) return
+      const index = order.indexOf(id)
+      useHistoryStore.getState().execute(new RemoveComponentCommand(existing, index, selectedId, setter))
+    },
+
+    selectComponent: (id) => set({ selectedId: id }),
+
+    setScale: (scale) => set({ scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale)) }),
+    setPosition: (position) => set({ position }),
+
+    zoomAt: (pointer, deltaScale) => {
+      const { scale, position } = get()
+      const nextScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * deltaScale))
+      const worldX = (pointer.x - position.x) / scale
+      const worldY = (pointer.y - position.y) / scale
+      set({
+        scale: nextScale,
+        position: {
+          x: pointer.x - worldX * nextScale,
+          y: pointer.y - worldY * nextScale,
+        },
+      })
+    },
+
+    toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
+    toggleSnap: () => set((state) => ({ snapEnabled: !state.snapEnabled })),
+  }
+})
