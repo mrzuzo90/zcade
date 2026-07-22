@@ -173,6 +173,8 @@ The canvas renderer reads simulation state without subscribing to high-frequency
 
 ## Component Library (Core Types)
 
+**For the exhaustive, borne-numbered component catalog (all 15 categories: power supplies, fuses, breakers/overload relays, contactors, motors, VFD/soft starters, pushbuttons/selectors, coils/timers/aux contacts, signaling, sensors, PLC/LOGO!/S7-1200, GRAFCET, pneumatics/hydraulics, 2D process interface, wiring/bus), see `docs/component-catalog.md`.** That document is the source of truth for pin/borne numbering and default label prefixes (`KM` contactors, `Q` breakers, `F` fuses/thermal relays, `S` pushbuttons, `H` pilots, `M` motors, `Y` solenoid valves) when implementing any component — the summary below is just an index. `COMPLETE_PROJECT_ROADMAP.md`'s Tier 1 (Phase A)/Tier 2/3 (Phase D) component lists are subsets selected from this catalog, not independently defined.
+
 ### Electrical Components
 - **Power Sources**: AC 3-phase, AC 1-phase, DC variable, Transformers, Rectifiers
 - **Protection**: Circuit Breakers (1P-4P), Fuses, Differential Relays (RCD)
