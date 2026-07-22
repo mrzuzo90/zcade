@@ -1,0 +1,19 @@
+<svg viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    3-phase AC power source. Body outline + a wavy "~" mark for AC, 3 vertical
+    terminal stubs down to pins L1/L2/L3 (matching PinDefinition offsets in
+    library.ts exactly: x=0,30,60 at y=30).
+  -->
+  <g id="layer:base">
+    <path d="M0,2 L60,2 L60,20 L0,20 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M15,11 C 18,4 22,18 25,11 C 28,4 32,18 35,11 C 38,4 42,18 45,11" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M0,20 L0,30" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M30,20 L30,30" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M60,20 L60,30" stroke="currentColor" stroke-width="1.5"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="L1" data-pin-kind="power" cx="0" cy="30" r="1"/>
+    <circle data-pin-id="L2" data-pin-kind="power" cx="30" cy="30" r="1"/>
+    <circle data-pin-id="L3" data-pin-kind="power" cx="60" cy="30" r="1"/>
+  </g>
+</svg>

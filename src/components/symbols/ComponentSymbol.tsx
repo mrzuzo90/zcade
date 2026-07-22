@@ -1,11 +1,14 @@
 import { Circle, Group, Line, Rect, Text } from 'react-konva'
 import type Konva from 'konva'
 import { useEffect, useState } from 'react'
-import type { ComponentInstance } from '@/types/circuit'
+import type { ComponentInstance, ContactSegment } from '@/types/circuit'
 import { getComponentDefinition } from '@/components/symbols/library'
+import { getSymbolDefinition } from '@/components/symbols/symbolRegistry'
+import { SymbolRenderer } from '@/components/symbols/SymbolRenderer'
 import { snapToGrid } from '@/store/canvas'
 import { useWireStore } from '@/store/wires'
 import { useSimulationStore } from '@/store/simulation'
+import type { ComponentRuntimeState } from '@/engine/solver'
 
 const PIN_COLOR: Record<string, string> = {
   power: '#f59e0b',
@@ -19,6 +22,24 @@ const PIN_COLOR: Record<string, string> = {
 
 /** Degrees per millisecond the rotor sweeps while running — purely cosmetic, not simulation-truth. */
 const ROTOR_SPEED = 0.25
+
+/**
+ * Mirrors `isSegmentClosed` in `engine/solver.ts` (SOLV-owned — not imported,
+ * since it isn't exported and this file must not edit that module). This is
+ * purely a rendering decision (which symbol layer variant to show), not a
+ * simulation input: the solver already applied the real version of this
+ * logic when it computed `runtimeState`, so a mismatch here can only ever
+ * make the drawing look wrong, never change circuit behavior.
+ */
+function isContactClosed(
+  segment: ContactSegment,
+  state: ComponentRuntimeState | undefined,
+): boolean {
+  if (segment.behavior === 'always_closed') return true
+  const active =
+    segment.control === 'pressed' ? (state?.pressed ?? false) : (state?.coilEnergized ?? false)
+  return segment.behavior === 'no' ? active : !active
+}
 
 interface ComponentSymbolProps {
   instance: ComponentInstance
@@ -49,8 +70,17 @@ export function ComponentSymbol({
   const runtimeState = useSimulationStore((s) => s.componentStates[instance.id])
   const setPressed = useSimulationStore((s) => s.setPressed)
   const isPressable = def.contacts?.some((c) => c.control === 'pressed') ?? false
-  const isEnergized = Boolean(runtimeState?.coilEnergized || runtimeState?.lit || runtimeState?.motorRunning)
+  const isEnergized = Boolean(
+    runtimeState?.coilEnergized || runtimeState?.lit || runtimeState?.motorRunning,
+  )
   const isPressedNow = Boolean(runtimeState?.pressed)
+  const symbolDef = getSymbolDefinition(instance.type)
+  const contactClosed = Object.fromEntries(
+    (def.contacts ?? []).map((segment) => [
+      segment.pins.join('-'),
+      isContactClosed(segment, runtimeState),
+    ]),
+  )
 
   useEffect(() => {
     if (instance.type !== 'motor_3p' || !runtimeState?.motorRunning) return
@@ -118,14 +148,30 @@ export function ComponentSymbol({
       onTouchStart={isRunning && isPressable ? (e) => handlePress(e, true) : undefined}
       onTouchEnd={isRunning && isPressable ? (e) => handlePress(e, false) : undefined}
     >
-      <Rect
-        width={def.width}
-        height={def.height}
-        fill={isPressedNow ? '#111827' : '#1f2937'}
-        stroke={strokeColor}
-        strokeWidth={selected || isEnergized ? 2 : 1}
-        cornerRadius={2}
-      />
+      {symbolDef ? (
+        <SymbolRenderer
+          def={symbolDef}
+          width={def.width}
+          height={def.height}
+          statusColor={strokeColor}
+          energized={isEnergized}
+          contactClosed={contactClosed}
+          bodyFill={isPressedNow ? '#111827' : 'transparent'}
+        />
+      ) : (
+        // Fallback for any component type without an authored SVG symbol yet
+        // (none as of Phase A W1 — every library.ts type has one — but kept
+        // so a future type added before its symbol exists still renders
+        // something selectable instead of nothing).
+        <Rect
+          width={def.width}
+          height={def.height}
+          fill={isPressedNow ? '#111827' : '#1f2937'}
+          stroke={strokeColor}
+          strokeWidth={selected || isEnergized ? 2 : 1}
+          cornerRadius={2}
+        />
+      )}
       <Text
         text={instance.label}
         width={def.width}
@@ -151,7 +197,14 @@ export function ComponentSymbol({
         return (
           <Group key={pin.id}>
             {(isHovered || isPending) && (
-              <Circle x={pin.offset.x} y={pin.offset.y} radius={7} fill="#60a5fa" opacity={0.35} listening={false} />
+              <Circle
+                x={pin.offset.x}
+                y={pin.offset.y}
+                radius={7}
+                fill="#60a5fa"
+                opacity={0.35}
+                listening={false}
+              />
             )}
             <Circle
               x={pin.offset.x}

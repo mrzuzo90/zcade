@@ -1,0 +1,16 @@
+<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+  <!-- Signal lamp. Circle + inscribed X (IEC indicator-light glyph), 2 terminal stubs. -->
+  <g id="layer:base">
+    <path d="M15,0 L15,5" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M15,25 L15,30" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M15,5 A10,10 0 1,0 15,25 A10,10 0 1,0 15,5 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M8,8 L22,22 M8,22 L22,8" stroke="currentColor" stroke-width="1.5"/>
+  </g>
+  <g id="layer:energized">
+    <path d="M15,5 A10,10 0 1,0 15,25 A10,10 0 1,0 15,5 Z" fill="#f59e0b" opacity="0.6"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="1" data-pin-kind="signal" cx="15" cy="0" r="1"/>
+    <circle data-pin-id="2" data-pin-kind="signal" cx="15" cy="30" r="1"/>
+  </g>
+</svg>
