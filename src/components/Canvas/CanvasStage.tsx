@@ -121,7 +121,7 @@ export function CanvasStage() {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     if (isRunning) return
-    const type = e.dataTransfer.getData('application/x-cadesimu-component')
+    const type = e.dataTransfer.getData('application/x-zcade-component')
     if (!type) return
     const stage = stageRef.current
     const container = containerRef.current

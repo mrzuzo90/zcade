@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "cadesimu-next",
+  "productName": "zCADe",
   "version": "0.1.0",
-  "identifier": "com.opencade.cadesimu-next",
+  "identifier": "com.zcade.app",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "CADe-Simu Next",
+        "title": "zCADe",
         "width": 1440,
         "height": 900,
         "minWidth": 1024,

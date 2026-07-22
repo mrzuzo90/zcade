@@ -41,7 +41,7 @@ export function Toolbar() {
 
   return (
     <header className="flex h-11 items-center gap-3 border-b border-gray-800 bg-gray-950 px-3 text-sm text-gray-200">
-      <span className="font-semibold text-gray-100">CADe-Simu Next</span>
+      <span className="font-semibold text-gray-100">zCADe</span>
       <div className="mx-2 h-5 w-px bg-gray-800" />
       <button
         className={

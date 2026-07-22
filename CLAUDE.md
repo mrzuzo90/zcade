@@ -4,23 +4,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## Project Overview: CADe-Simu Next (OpenCADe)
+## Project Overview: zCADe
 
-**CADe-Simu Next** is a modern, open-source, cross-platform industrial schematics and simulation application inspired by CADe SIMU and PC SIMU. It provides a unified environment for electrical schematics, pneumatic logic, PLC programming, and 2D interactive process simulation.
+**zCADe: The next-generation industrial schematics & simulation suite.**
+
+zCADe is a modern, open-source, cross-platform industrial schematics and simulation application that succeeds the legacy CADe SIMU ecosystem. It provides a unified environment for electrical schematics, pneumatic logic, PLC programming, and 2D interactive process simulation.
 
 **Key Goals:**
 - Cross-platform (Windows, macOS, Linux, Web)
 - Real-time electrical, pneumatic, and PLC simulation
 - Modern UI/UX with infinite canvas, dark/light themes, and auto-routing
-- Open JSON-based file format (`.cadesimu.json`)
+- Open JSON-based file format (`.zcade` or `zcade.json`)
 - Extensible component plugin architecture
 
-### Historical Context
-**CADe SIMU** was created by Prof. Juan Luis Villanueva Montoto (CanalPLC) and remains the de facto standard for electrical automation education in Spanish-speaking technical schools and universities. The most widely deployed version is V4.0–V4.2 (Windows-only freeware, no longer maintained). This project exists to provide a modern, cross-platform, open-source replacement for users who:
+### Historical Context & Mission
+**CADe SIMU** was created by Prof. Juan Luis Villanueva Montoto (CanalPLC) and remains the de facto standard for electrical automation education in Spanish-speaking technical schools and universities. The most widely deployed version is V4.0–V4.2 (Windows-only freeware, no longer maintained). 
+
+**zCADe** is a dignified successor: a modern, cross-platform, open-source replacement for users who:
 - Require macOS/Linux native support (educators & technicians outside Windows)
 - Need extensibility and plugin architecture for domain-specific components
 - Want an open-source alternative for integration in educational environments
 - Require offline-first operation in classrooms and industrial settings without internet connectivity
+
+The name "zCADe" signals both a respectful nod to CADe SIMU's legacy and a forward-looking vision: "z" as in the final evolution, the complete next chapter.
 
 ---
 
@@ -186,7 +192,7 @@ The canvas renderer reads simulation state without subscribing to high-frequency
 
 ---
 
-## File Format: `.cadesimu.json`
+## File Format: `.zcade`
 
 All projects are stored in a human-readable, version-controlled JSON format:
 
@@ -245,57 +251,21 @@ All projects are stored in a human-readable, version-controlled JSON format:
 
 ---
 
-## Development Roadmap (Phases)
+## Project Roadmap
 
-### **Phase 1: Foundation & Canvas Infrastructure** ✅ Done
-- [x] Tauri 2.0 + React 19 setup
-- [x] Infinite grid canvas with zoom/pan/snap-to-grid
-- [x] Draggable component symbols with rotation and pin anchors
-- **Command**: `npm run dev` (Vite web) / `npm run tauri dev` (Tauri desktop window)
-- See [Implementation Status](#implementation-status-phase-1) below for what was actually built and key decisions made.
+**For the complete, authoritative roadmap governing all 6 phases (A–F, weeks 1–11, Jul 27 – Oct 9 2026), see `COMPLETE_PROJECT_ROADMAP.md`.**
 
-### **Phase 2: Wiring Engine & Topological Graph** ✅ Done
-- [x] Point-to-point wire routing with orthogonal lines
-- [x] Automatic junction node creation
-- [x] Topological circuit graph builder
-- [x] Wire color coding and net identification
-- See [Implementation Status](#implementation-status-phase-2) below for what was actually built and key decisions made.
+That document is the **single source of truth** for all development work and is subject to change (see Change Log at end of roadmap). It contains:
+- Detailed phase-by-phase breakdown with specialist agent roles
+- Critical path analysis and parallelization strategy
+- Concrete daily task lists and integration points
+- Success criteria (gates) for each phase
+- Complete risk register with mitigation plans
 
-### **Phase 3: Electrical Simulation Engine** ✅ Done
-- [x] Graph solver at 50Hz/60Hz tick rate
-- [x] Voltage propagation through switches
-- [x] Contactor coil logic and linked contact automation
-- [x] Motor phase detection and animation
-- See [Implementation Status](#implementation-status-phase-3) below for what was actually built and key decisions made.
+### Completed Phases (Prototype)
 
-### **Phase 4: Pneumatic & PLC Simulation**
-- LOGO! / S7-1200 PLC emulation
-- GRAFCET execution engine
-- Pneumatic valve and cylinder motion physics
-
-### **Phase 5: PC-SIMU 2D Process View**
-- Interactive 2D scene (conveyors, tanks, elevators)
-- Direct IO mapping to schematic elements
-
-### **Phase 6: Export, BOM & Polish**
-- PDF export with DIN 6771 title blocks
-- Bill of Materials (CSV/Excel)
-- Keyboard shortcuts, multi-language support
-
-### Timeline & MVP Definition
-
-**Weeks 1–3 (MVP — Core Editor + Basic Simulation)**:
-- Phases 1, 2, 3 (Foundation, Wiring, Electrical Simulation)
-- Minimum viable product: create schematics, wire them, simulate AC/DC power flow and basic contactor logic
-- No PLC, no GRAFCET, no 2D process view
-
-**Weeks 4–6 (Beta — Automation Logic)**:
-- Phase 4: PLC LOGO! emulation, GRAFCET engine, pneumatic valves
-- Industrial automation control sequences enabled
-
-**Weeks 7–9 (V1.0 Release — Full-Featured)**:
-- Phases 5, 6: 2D process simulation, PDF export, multi-platform packaging (Windows/macOS/Linux)
-- Feature-complete for educational and industrial SME use
+The working prototype integrates:
+- **Phases 1–3** ✅ (commits `68d7383` → `9f714b2`): infinite canvas + grid/zoom, 6 Konva-drawn components, orthogonal wiring with union-find graph, 50 Hz fixed-point electrical solver with seal-in logic, operate-mode UI, 41 passing tests. This serves as the foundation for Phase A of the production roadmap.
 
 ---
 
@@ -319,7 +289,7 @@ Completed 2026-07-22. Scaffolded from scratch (empty repo) with `npm create vite
 - Vitest + Testing Library configured via `vite.config.ts` (`import { defineConfig } from 'vitest/config'`, not `'vite'`, so the `test` key type-checks); `tests/integration/canvas-store.test.ts` covers the canvas store (add/move/rotate/remove/zoom/snap).
 - `src-tauri/tauri.conf.json`: identifier `com.opencade.cadesimu-next`, window 1440×900 (min 1024×640).
 
-**Not yet built as of Phase 1** (wire drawing/routing, junction nodes, and the topological graph builder were added in Phase 2 — see [Implementation Status (Phase 2)](#implementation-status-phase-2) below): any solver, undo/redo, `.cadesimu.json` load/save, light theme.
+**Not yet built as of Phase 1** (wire drawing/routing, junction nodes, and the topological graph builder were added in Phase 2 — see [Implementation Status (Phase 2)](#implementation-status-phase-2) below): any solver, undo/redo, `.zcade` load/save, light theme.
 
 **Verified working**: `npm run type-check`, `npm run lint`, `npm run test` (7/7 passing), `npm run build`, and `cargo check` in `src-tauri/` all pass. Manually exercised in Chrome via `npm run dev` (add/drag/rotate/select/deselect/delete, palette drag-and-drop, pan, zoom) — not yet run through `npm run tauri dev` (native window), which does a full Rust build and wasn't exercised end-to-end this session.
 
@@ -338,12 +308,12 @@ Completed 2026-07-22, directly on top of Phase 1 (commit `2f177aa`).
 - `src/components/Canvas/Toolbar.tsx` / `CanvasStage.tsx` — when a wire is selected, the toolbar swaps in a wire-type `<select>` (IEC role → color, via `setWireType`) and an "Eliminar cable" button. `Escape` cancels a pending wire; clicking empty canvas does too (checked before the existing deselect-on-empty-click behavior). Stage panning (`draggable`) is disabled while a wire is pending, so the click-to-place gesture isn't mistaken for a canvas drag.
 
 **Key design decisions**:
-- **Wires store only pin references, not fixed coordinates.** `Wire.points` is optional and unused by the live editor — every render recomputes the polyline from current pin positions via `getWirePath()`. This was called out as a requirement in this doc's "Wire System" section ("robust to component moves") and matters concretely: without it, moving a wired component would leave its wires visually detached until some explicit re-route step. The `points` override exists only for a future manual-waypoint-editing feature and for round-tripping a saved `.cadesimu.json`.
+- **Wires store only pin references, not fixed coordinates.** `Wire.points` is optional and unused by the live editor — every render recomputes the polyline from current pin positions via `getWirePath()`. This was called out as a requirement in this doc's "Wire System" section ("robust to component moves") and matters concretely: without it, moving a wired component would leave its wires visually detached until some explicit re-route step. The `points` override exists only for a future manual-waypoint-editing feature and for round-tripping a saved `.zcade`.
 - **Junction (T-tap) detection is intentionally narrower than "any two wires crossing," and (revised in Phase 3) only ever fires for a manually-routed host wire.** A junction is only created where one wire's *endpoint pin* geometrically lands on the interior of another wire's segment that the user explicitly routed via a manual `points` override — never against an auto-routed elbow. Phase 3's solver tests caught the reason why: on any grid-aligned layout (the norm for ladder-style schematics), an unrelated component's pin routinely ends up sitting on some other wire's auto-routed leg by pure coincidence, and treating that as a real tap silently produced wrong circuits. See the doc comment on `findJunctions` in `engine/wiring.ts`. Two wires that cross without a shared endpoint are rendered as an unmarked crossing (no dot, no arc-hop polish yet).
 - **Wire electrical role (L1/L2/L3/N/PE/DC+/DC0/signal) is manually assigned, not inferred**, even though Phase 3 added power-source components and a live solver. `wireType` (cosmetic, edit-time) and the solver's computed net potentials (live, simulation-time) are deliberately two separate systems — see Phase 3 notes below for why they aren't merged.
 - **Component pin kinds (`power_no`, `coil`, etc.) are not used to restrict what can be wired together.** Any pin can connect to any other pin at draw time — electrical rule checking (ERC) is out of scope for the wiring layer and would be a later, separate pass.
 
-**Not yet built** (left for later phases): manual wire waypoint editing (so geometric T-junctions are effectively dormant until then), arc-hop rendering for unrelated crossing wires, `.cadesimu.json` wire load/save, any pin-kind/ERC validation.
+**Not yet built** (left for later phases): manual wire waypoint editing (so geometric T-junctions are effectively dormant until then), arc-hop rendering for unrelated crossing wires, `.zcade` wire load/save, any pin-kind/ERC validation.
 
 **Verified working**: `npm run type-check`, `npm run lint`, `npm run test` (26/26 passing, including new `tests/engine/wiring.test.ts`, `tests/engine/graph.test.ts`, `tests/integration/wire-store.test.ts`), `npm run build`. Manually exercised in Chrome via `npm run dev`: draw a wire pin-to-pin (start/preview/complete), select a wire and assign an IEC wire-type color from the toolbar, cascade-delete a component's wires on component removal, and cancel a pending wire with `Escape`.
 
@@ -494,5 +464,5 @@ npm run lint             # ESLint check
 
 **Documentation**:
 - In-app component tooltips and interactive guide (post-MVP)
-- `.cadesimu.json` example projects in `/examples/` directory (template circuits: motor starters, star-delta, PLC logic)
+- `.zcade` example projects in `/examples/` directory (template circuits: motor starters, star-delta, PLC logic)
 - Inline code comments only for non-obvious domain logic (IEC 60617 pinout conventions, GRAFCET state machines)

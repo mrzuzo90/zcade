@@ -1,8 +1,12 @@
-# CADe-Simu Next (OpenCADe)
+# zCADe
+
+**The next-generation industrial schematics & simulation suite.**
 
 Modern, open-source, cross-platform industrial schematics and simulation
-application inspired by CADe SIMU and PC SIMU. See `CLAUDE.md` for full
-project context, architecture, and roadmap.
+application. zCADe succeeds the legacy CADe SIMU ecosystem with modern UX,
+cross-platform support, and extensible architecture. See `CLAUDE.md` for full
+project context, architecture, and roadmap; see `COMPLETE_PROJECT_ROADMAP.md`
+for the V1.0 release plan (Phases A–F, 9–11 weeks).
 
 ## Stack
 

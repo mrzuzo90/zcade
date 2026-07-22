@@ -33,7 +33,7 @@ export function ComponentPalette() {
               draggable={!isRunning}
               disabled={isRunning}
               onDragStart={(e) => {
-                e.dataTransfer.setData('application/x-cadesimu-component', def.type)
+                e.dataTransfer.setData('application/x-zcade-component', def.type)
                 e.dataTransfer.effectAllowed = 'copy'
               }}
               onClick={() => !isRunning && addComponent(def.type, 200, 200)}
