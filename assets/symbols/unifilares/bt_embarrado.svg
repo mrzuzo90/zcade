@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 82.08 50.64">
+  <path d="M 9.6 25.2 L 25.44 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 25.2 L 72.48 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.44 41.04 L 25.44 9.6" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.44 9.6 L 56.64 9.6" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 9.6 L 56.64 41.04" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 41.04 L 25.44 41.04" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 28.56 37.92 L 50.4 37.92" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 28.56 31.68 L 50.4 31.68" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 28.56 25.2 L 50.4 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 28.56 18.96 L 50.4 18.96" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 28.56 12.72 L 50.4 12.72" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <text x="51.36" y="14.4" font-family="Arial, Helvetica, sans-serif" font-size="4.39" fill="currentColor">L1</text>
+  <text x="51.12" y="20.64" font-family="Arial, Helvetica, sans-serif" font-size="4.39" fill="currentColor">L2</text>
+  <text x="51.12" y="26.88" font-family="Arial, Helvetica, sans-serif" font-size="4.39" fill="currentColor">L3</text>
+  <text x="52.08" y="33.12" font-family="Arial, Helvetica, sans-serif" font-size="4.39" fill="currentColor">N</text>
+  <text x="52.32" y="39.36" font-family="Arial, Helvetica, sans-serif" font-size="4.39" fill="currentColor">T</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 82.08 35.04">
+  <path d="M 9.6 17.52 L 25.44 17.52" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 17.52 L 72.48 17.52" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.44 17.52 L 33.12 17.52" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 48.96 17.52 L 56.64 17.52" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 9.6 L 48.96 9.6" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 25.44 L 48.96 25.44" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 25.44 L 33.12 12.72" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 48.96 25.44 L 48.96 12.72" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 12.72 L 48.96 12.72" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 12.72 L 33.12 9.6" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 48.96 9.6 L 48.96 12.72" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 25.44 L 33.12 9.6" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <text x="34.8" y="22.32" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">Wh</text>
+</svg>

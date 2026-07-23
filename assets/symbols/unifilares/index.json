@@ -1,0 +1,283 @@
+{
+  "sources": [
+    "simbolos.pdf — Símbolos eléctricos unifilares, Ingeniero Solitario (ADG), octubre 2023"
+  ],
+  "extraction": "vector (PyMuPDF path extraction, no rasterization)",
+  "symbols": [
+    {
+      "file": "bt_puesta_a_tierra.svg",
+      "category": "baja_tension",
+      "name": "Puesta a tierra"
+    },
+    {
+      "file": "bt_enchufe.svg",
+      "category": "baja_tension",
+      "name": "Enchufe"
+    },
+    {
+      "file": "bt_iluminacion.svg",
+      "category": "baja_tension",
+      "name": "Iluminación"
+    },
+    {
+      "file": "bt_motor.svg",
+      "category": "maquinas",
+      "name": "Motor"
+    },
+    {
+      "file": "bt_resistencia.svg",
+      "category": "baja_tension",
+      "name": "Resistencia"
+    },
+    {
+      "file": "bt_cuadro_de_protecciones.svg",
+      "category": "baja_tension",
+      "name": "Cuadro de protecciones"
+    },
+    {
+      "file": "bt_bateria_condensadores.svg",
+      "category": "maquinas",
+      "name": "Batería de condensadores"
+    },
+    {
+      "file": "bt_seccionador.svg",
+      "category": "protecciones",
+      "name": "Seccionador"
+    },
+    {
+      "file": "bt_interruptor_seccionador.svg",
+      "category": "protecciones",
+      "name": "Interruptor-seccionador"
+    },
+    {
+      "file": "bt_fusible.svg",
+      "category": "protecciones",
+      "name": "Fusibles"
+    },
+    {
+      "file": "bt_fusible_seccionable.svg",
+      "category": "protecciones",
+      "name": "Fusible seccionable"
+    },
+    {
+      "file": "bt_interruptor_automatico.svg",
+      "category": "protecciones",
+      "name": "Interruptor automático"
+    },
+    {
+      "file": "bt_interruptor_diferencial.svg",
+      "category": "protecciones",
+      "name": "Interruptor diferencial"
+    },
+    {
+      "file": "bt_interruptor_automatico_rele.svg",
+      "category": "protecciones",
+      "name": "Interruptor automático con relé"
+    },
+    {
+      "file": "bt_protector_sobretensiones.svg",
+      "category": "protecciones",
+      "name": "Protector sobretensiones transitorias"
+    },
+    {
+      "file": "bt_interruptor_temporizador.svg",
+      "category": "protecciones",
+      "name": "Interruptor-temporizador"
+    },
+    {
+      "file": "bt_transformador.svg",
+      "category": "maquinas",
+      "name": "Transformador"
+    },
+    {
+      "file": "bt_caja_seccionamiento.svg",
+      "category": "baja_tension",
+      "name": "Caja de seccionamiento (CS)"
+    },
+    {
+      "file": "bt_caja_general_proteccion.svg",
+      "category": "baja_tension",
+      "name": "Caja general de protección (CGP)"
+    },
+    {
+      "file": "bt_medidor_directo.svg",
+      "category": "medida",
+      "name": "Medidor directo"
+    },
+    {
+      "file": "bt_medidor_indirecto.svg",
+      "category": "medida",
+      "name": "Medidor indirecto"
+    },
+    {
+      "file": "bt_embarrado.svg",
+      "category": "lineas",
+      "name": "Embarrado"
+    },
+    {
+      "file": "bt_modulos_fotovoltaicos.svg",
+      "category": "maquinas",
+      "name": "Módulos fotovoltaicos"
+    },
+    {
+      "file": "bt_inversor.svg",
+      "category": "maquinas",
+      "name": "Inversor de corriente"
+    },
+    {
+      "file": "bt_regulador_cc.svg",
+      "category": "maquinas",
+      "name": "Regulador u optimizador de corriente continua"
+    },
+    {
+      "file": "bt_bateria_almacenamiento.svg",
+      "category": "maquinas",
+      "name": "Batería o almacenamiento"
+    },
+    {
+      "file": "bt_generador_ca.svg",
+      "category": "maquinas",
+      "name": "Generador corriente alterna"
+    },
+    {
+      "file": "bt_vatimetro_directo.svg",
+      "category": "medida",
+      "name": "Vatímetro directo"
+    },
+    {
+      "file": "bt_vatimetro_indirecto.svg",
+      "category": "medida",
+      "name": "Vatímetro indirecto"
+    },
+    {
+      "file": "bt_sumador_intensidades.svg",
+      "category": "medida",
+      "name": "Sumador de intensidades"
+    },
+    {
+      "file": "bt_linea_monofasica.svg",
+      "category": "lineas",
+      "name": "Línea monofásica (F/N/T)"
+    },
+    {
+      "file": "bt_linea_trifasica_fnt.svg",
+      "category": "lineas",
+      "name": "Línea trifásica (3·F/N/T)"
+    },
+    {
+      "file": "bt_linea_trifasica_fn.svg",
+      "category": "lineas",
+      "name": "Línea trifásica (3·F/N)"
+    },
+    {
+      "file": "bt_linea_trifasica_f.svg",
+      "category": "lineas",
+      "name": "Línea trifásica (3·F)"
+    },
+    {
+      "file": "bt_linea_cc.svg",
+      "category": "lineas",
+      "name": "Línea de corriente contínua (P+/-)"
+    },
+    {
+      "file": "bt_linea_cc_tierra.svg",
+      "category": "lineas",
+      "name": "Línea de corriente contínua (P+/-/T)"
+    },
+    {
+      "file": "bt_indicador.svg",
+      "category": "medida",
+      "name": "Indicador"
+    },
+    {
+      "file": "protecciones_rele_27_tension_minima.svg",
+      "category": "protecciones",
+      "name": "Relé 27 — tensión mínima (ANSI)"
+    },
+    {
+      "file": "protecciones_rele_57_cortocircuito.svg",
+      "category": "protecciones",
+      "name": "Relé 57 — cortocircuito (ANSI)"
+    },
+    {
+      "file": "protecciones_rele_59_tension_maxima.svg",
+      "category": "protecciones",
+      "name": "Relé 59 — tensión máxima (ANSI)"
+    },
+    {
+      "file": "protecciones_rele_59n_tension_maxima_homopolar.svg",
+      "category": "protecciones",
+      "name": "Relé 59N — tensión máxima homopolar (ANSI)"
+    },
+    {
+      "file": "protecciones_rele_64_fallo_tierra.svg",
+      "category": "protecciones",
+      "name": "Relé 64 — fallo a tierra (ANSI)"
+    },
+    {
+      "file": "protecciones_rele_81_frecuencia.svg",
+      "category": "protecciones",
+      "name": "Relé 81 — desviación de frecuencia (ANSI)"
+    },
+    {
+      "file": "protecciones_rele_87_diferencial.svg",
+      "category": "protecciones",
+      "name": "Relé 87 — diferencial (ANSI)"
+    },
+    {
+      "file": "at_celda_interruptor_automatico.svg",
+      "category": "alta_tension",
+      "name": "Celda interruptor automático"
+    },
+    {
+      "file": "at_celda_interruptor_seccionador_fusible.svg",
+      "category": "alta_tension",
+      "name": "Celda interruptor-seccionador con fusible"
+    },
+    {
+      "file": "at_celda_interruptor_seccionador.svg",
+      "category": "alta_tension",
+      "name": "Celda interruptor-seccionador"
+    },
+    {
+      "file": "at_celda_interruptor_seccionador_telecontrol.svg",
+      "category": "alta_tension",
+      "name": "Celda interruptor-seccionador con telecontrol"
+    },
+    {
+      "file": "at_celda_servicios_auxiliares.svg",
+      "category": "alta_tension",
+      "name": "Celda servicios auxiliares"
+    },
+    {
+      "file": "at_celda_medida.svg",
+      "category": "alta_tension",
+      "name": "Celda de medida"
+    },
+    {
+      "file": "at_caja_celda_flechas_numeros.svg",
+      "category": "alta_tension",
+      "name": "Caja celda, flechas y números"
+    },
+    {
+      "file": "at_transformador_at_bt.svg",
+      "category": "alta_tension",
+      "name": "Transformador AT/BT"
+    },
+    {
+      "file": "at_celda_remonte.svg",
+      "category": "alta_tension",
+      "name": "Celda de remonte"
+    },
+    {
+      "file": "at_celda_interruptor_seccionador_seccionalizadora.svg",
+      "category": "alta_tension",
+      "name": "Celda interruptor-seccionador con función seccionalizadora"
+    },
+    {
+      "file": "at_celda_interruptor_seccionador_interruptor_automatico.svg",
+      "category": "alta_tension",
+      "name": "Celda interruptor-seccionador con interruptor automático"
+    }
+  ]
+}

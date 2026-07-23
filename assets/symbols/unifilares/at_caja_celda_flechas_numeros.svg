@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168.24 199.68">
+  <path d="M 78.72 154.08 L 80.4 150.96" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 81.84 150.96 L 80.4 154.08" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 80.4 150.96 L 77.28 150.96" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 80.4 154.08 L 83.52 154.08" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 77.28 150.96 L 78.72 154.08" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 83.52 154.08 L 81.84 150.96" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 77.28 150.96 L 80.4 150.96 L 78.72 154.08 L 77.28 150.96" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 81.84 150.96 L 83.52 154.08 L 80.4 154.08 L 81.84 150.96" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 80.4 150.96 L 80.4 166.8" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 48.72 182.28 C 48.72 177.97 45.23 174.48 40.92 174.48 C 36.61 174.48 33.12 177.97 33.12 182.28 C 33.12 186.59 36.61 190.08 40.92 190.08 C 45.23 190.08 48.72 186.59 48.72 182.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 64.32 182.28 C 64.32 177.97 60.83 174.48 56.52 174.48 C 52.21 174.48 48.72 177.97 48.72 182.28 C 48.72 186.59 52.21 190.08 56.52 190.08 C 60.83 190.08 64.32 186.59 64.32 182.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 80.16 182.28 C 80.16 177.97 76.67 174.48 72.36 174.48 C 68.05 174.48 64.56 177.97 64.56 182.28 C 64.56 186.59 68.05 190.08 72.36 190.08 C 76.67 190.08 80.16 186.59 80.16 182.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 95.76 182.28 C 95.76 177.97 92.27 174.48 87.96 174.48 C 83.65 174.48 80.16 177.97 80.16 182.28 C 80.16 186.59 83.65 190.08 87.96 190.08 C 92.27 190.08 95.76 186.59 95.76 182.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 111.6 182.28 C 111.6 177.97 108.11 174.48 103.8 174.48 C 99.49 174.48 96 177.97 96 182.28 C 96 186.59 99.49 190.08 103.8 190.08 C 108.11 190.08 111.6 186.59 111.6 182.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 127.2 182.28 C 127.2 177.97 123.71 174.48 119.4 174.48 C 115.09 174.48 111.6 177.97 111.6 182.28 C 111.6 186.59 115.09 190.08 119.4 190.08 C 123.71 190.08 127.2 186.59 127.2 182.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 143.04 182.28 C 143.04 177.97 139.55 174.48 135.24 174.48 C 130.93 174.48 127.44 177.97 127.44 182.28 C 127.44 186.59 130.93 190.08 135.24 190.08 C 139.55 190.08 143.04 186.59 143.04 182.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 158.64 182.28 C 158.64 177.97 155.15 174.48 150.84 174.48 C 146.53 174.48 143.04 177.97 143.04 182.28 C 143.04 186.59 146.53 190.08 150.84 190.08 C 155.15 190.08 158.64 186.59 158.64 182.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 17.4 C 25.2 13.09 21.71 9.6 17.4 9.6 C 13.09 9.6 9.6 13.09 9.6 17.4 C 9.6 21.71 13.09 25.2 17.4 25.2 C 21.71 25.2 25.2 21.71 25.2 17.4" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 33.24 C 25.2 28.93 21.71 25.44 17.4 25.44 C 13.09 25.44 9.6 28.93 9.6 33.24 C 9.6 37.55 13.09 41.04 17.4 41.04 C 21.71 41.04 25.2 37.55 25.2 33.24" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 48.84 C 25.2 44.53 21.71 41.04 17.4 41.04 C 13.09 41.04 9.6 44.53 9.6 48.84 C 9.6 53.15 13.09 56.64 17.4 56.64 C 21.71 56.64 25.2 53.15 25.2 48.84" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 64.44 C 25.2 60.13 21.71 56.64 17.4 56.64 C 13.09 56.64 9.6 60.13 9.6 64.44 C 9.6 68.75 13.09 72.24 17.4 72.24 C 21.71 72.24 25.2 68.75 25.2 64.44" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 80.28 C 25.2 75.97 21.71 72.48 17.4 72.48 C 13.09 72.48 9.6 75.97 9.6 80.28 C 9.6 84.59 13.09 88.08 17.4 88.08 C 21.71 88.08 25.2 84.59 25.2 80.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 95.88 C 25.2 91.57 21.71 88.08 17.4 88.08 C 13.09 88.08 9.6 91.57 9.6 95.88 C 9.6 100.19 13.09 103.68 17.4 103.68 C 21.71 103.68 25.2 100.19 25.2 95.88" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 111.72 C 25.2 107.41 21.71 103.92 17.4 103.92 C 13.09 103.92 9.6 107.41 9.6 111.72 C 9.6 116.03 13.09 119.52 17.4 119.52 C 21.71 119.52 25.2 116.03 25.2 111.72" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 127.32 C 25.2 123.01 21.71 119.52 17.4 119.52 C 13.09 119.52 9.6 123.01 9.6 127.32 C 9.6 131.63 13.09 135.12 17.4 135.12 C 21.71 135.12 25.2 131.63 25.2 127.32" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 9.6 L 33.12 166.8 L 127.44 166.8 L 127.44 9.6 Z" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <text x="38.88" y="185.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">1</text>
+  <text x="54.48" y="185.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">2</text>
+  <text x="70.08" y="185.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">3</text>
+  <text x="85.92" y="185.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">4</text>
+  <text x="101.52" y="185.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">5</text>
+  <text x="117.12" y="185.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">6</text>
+  <text x="132.72" y="185.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">7</text>
+  <text x="148.56" y="185.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">8</text>
+  <text x="15.36" y="20.64" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">1</text>
+  <text x="15.12" y="36.48" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">2</text>
+  <text x="15.12" y="52.08" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">3</text>
+  <text x="15.12" y="67.92" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">4</text>
+  <text x="15.12" y="83.52" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">5</text>
+  <text x="15.12" y="99.12" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">6</text>
+  <text x="15.12" y="114.96" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">7</text>
+  <text x="15.12" y="130.56" font-family="Arial, Helvetica, sans-serif" font-size="8.77" fill="currentColor">8</text>
+</svg>

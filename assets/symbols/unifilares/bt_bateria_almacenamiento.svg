@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66.24 36.07">
+  <path d="M 9.6 18.55 L 25.2 18.55" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.6 18.43 C 33.6 17.17 32.58 16.15 31.32 16.15 C 30.06 16.15 29.04 17.17 29.04 18.43 C 29.04 19.69 30.06 20.71 31.32 20.71 C 32.58 20.71 33.6 19.69 33.6 18.43" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.56 18.43 C 52.56 17.17 51.54 16.15 50.28 16.15 C 49.02 16.15 48 17.17 48 18.43 C 48 19.69 49.02 20.71 50.28 20.71 C 51.54 20.71 52.56 19.69 52.56 18.43" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 31.68 16.39 L 31.2 16.39 L 31.68 16.39" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 31.68 16.39 L 31.2 16.39 L 31.92 16.39 L 31.68 16.39 M 31.2 16.39 L 31.92 16.39 L 30.96 16.39 L 31.2 16.39" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 31.92 16.39 L 30.96 16.39 L 32.16 16.39 L 31.92 16.39 M 30.96 16.39 L 32.16 16.39 L 30.72 16.39 L 30.96 16.39" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.16 16.39 L 30.72 16.39 L 32.4 16.63 L 32.16 16.39 M 30.72 16.39 L 32.4 16.63 L 30.72 16.63 L 30.72 16.39" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.4 16.63 L 30.72 16.63 L 32.64 16.63 L 32.4 16.63 M 30.72 16.63 L 32.64 16.63 L 30.48 16.63 L 30.72 16.63" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.64 16.63 L 30.48 16.63 L 32.88 16.87 L 32.64 16.63 M 30.48 16.63 L 32.88 16.87 L 30.24 16.87 L 30.48 16.63 M 32.88 16.87 L 30.24 16.87 L 30 16.87 L 32.88 16.87" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 30.24 16.87 L 32.88 16.87 L 30.24 16.87" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.88 16.87 L 30 16.87 L 33.12 17.11 L 32.88 16.87 M 30 16.87 L 33.12 17.11 L 30 17.11 L 30 16.87" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 17.11 L 30 17.11 L 33.36 17.11 L 33.12 17.11 M 30 17.11 L 33.36 17.11 L 29.76 17.11 L 30 17.11" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.36 17.11 L 29.76 17.11 L 33.36 17.35 L 33.36 17.11 M 29.76 17.11 L 33.36 17.35 L 29.76 17.35 L 29.76 17.11" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.36 17.35 L 29.76 17.35 L 33.36 17.59 L 33.36 17.35 M 29.76 17.35 L 33.36 17.59 L 29.52 17.59 L 29.76 17.35" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.36 17.59 L 29.52 17.59 L 33.6 17.83 L 33.36 17.59 M 29.52 17.59 L 33.6 17.83 L 29.52 17.83 L 29.52 17.59 M 33.6 17.83 L 29.52 17.83 L 29.28 17.83 L 33.6 17.83" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 29.52 17.83 L 33.6 17.83 L 29.52 17.83" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.6 17.83 L 29.28 17.83 L 33.6 18.07 L 33.6 17.83 M 29.28 17.83 L 33.6 18.07 L 29.28 18.07 L 29.28 17.83" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.6 18.07 L 29.28 18.07 L 33.6 18.31 L 33.6 18.07 M 29.28 18.07 L 33.6 18.31 L 29.28 18.31 L 29.28 18.07" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.6 18.31 L 29.28 18.31 L 33.84 18.55 L 33.6 18.31 M 29.28 18.31 L 33.84 18.55 L 29.28 18.55 L 29.28 18.31" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.84 18.55 L 29.28 18.55 L 33.6 18.79 L 33.84 18.55 M 29.28 18.55 L 33.6 18.79 L 29.28 18.79 L 29.28 18.55" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.6 18.79 L 29.28 18.79 L 33.6 19.03 L 33.6 18.79 M 29.28 18.79 L 33.6 19.03 L 29.28 19.03 L 29.28 18.79" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.6 19.03 L 29.28 19.03 L 33.6 19.27 L 33.6 19.03 M 29.28 19.03 L 33.6 19.27 L 29.28 19.27 L 29.28 19.03 M 33.6 19.27 L 29.28 19.27 L 29.52 19.27 L 33.6 19.27" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 29.28 19.27 L 33.6 19.27 L 29.28 19.27" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.6 19.27 L 29.52 19.27 L 33.36 19.51 L 33.6 19.27 M 29.52 19.27 L 33.36 19.51 L 29.52 19.51 L 29.52 19.27" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.36 19.51 L 29.52 19.51 L 33.36 19.75 L 33.36 19.51 M 29.52 19.51 L 33.36 19.75 L 29.76 19.75 L 29.52 19.51" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.36 19.75 L 29.76 19.75 L 33.36 19.99 L 33.36 19.75 M 29.76 19.75 L 33.36 19.99 L 29.76 19.99 L 29.76 19.75" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.36 19.99 L 29.76 19.99 L 33.12 19.99 L 33.36 19.99 M 29.76 19.99 L 33.12 19.99 L 30 19.99 L 29.76 19.99" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 33.12 19.99 L 30 19.99 L 32.88 20.23 L 33.12 19.99 M 30 19.99 L 32.88 20.23 L 30 20.23 L 30 19.99" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.88 20.23 L 30 20.23 L 32.88 20.47 L 32.88 20.23 M 30 20.23 L 32.88 20.47 L 30.24 20.47 L 30 20.23" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.88 20.47 L 30.24 20.47 L 32.64 20.47 L 32.88 20.47 M 30.24 20.47 L 32.64 20.47 L 30.48 20.47 L 30.24 20.47" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.64 20.47 L 30.48 20.47 L 32.4 20.47 L 32.64 20.47 M 30.48 20.47 L 32.4 20.47 L 30.72 20.47 L 30.48 20.47" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.4 20.47 L 30.72 20.47 L 32.16 20.71 L 32.4 20.47 M 30.72 20.47 L 32.16 20.71 L 30.72 20.71 L 30.72 20.47" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 32.16 20.71 L 30.72 20.71 L 31.92 20.71 L 32.16 20.71 M 30.72 20.71 L 31.92 20.71 L 30.96 20.71 L 30.72 20.71" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 31.68 20.71 L 31.68 20.71 L 31.2 20.71 L 31.68 20.71 L 31.2 20.71 L 30.96 20.71 L 31.68 20.71" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 30.96 20.71 L 31.92 20.71 L 31.68 20.71 L 30.96 20.71" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 50.4 16.39 L 50.64 16.39 L 49.92 16.39 L 50.4 16.39" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 50.88 16.39 L 50.88 16.39 L 49.92 16.39 L 50.88 16.39 L 49.92 16.39 L 50.64 16.39 L 50.88 16.39" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 50.88 16.39 L 49.92 16.39 L 51.12 16.39 L 50.88 16.39 M 49.92 16.39 L 51.12 16.39 L 49.68 16.39 L 49.92 16.39" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.12 16.39 L 49.68 16.39 L 51.36 16.63 L 51.12 16.39 M 49.68 16.39 L 51.36 16.63 L 49.44 16.63 L 49.68 16.39 M 51.36 16.63 L 49.44 16.63 L 49.2 16.63 L 51.36 16.63" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 49.44 16.63 L 51.36 16.63 L 49.44 16.63" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.36 16.63 L 49.2 16.63 L 51.6 16.87 L 51.36 16.63 M 49.2 16.63 L 51.6 16.87 L 49.2 16.87 L 49.2 16.63" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.6 16.87 L 49.2 16.87 L 51.84 16.87 L 51.6 16.87 M 49.2 16.87 L 51.84 16.87 L 48.96 16.87 L 49.2 16.87" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.84 16.87 L 48.96 16.87 L 52.08 17.11 L 51.84 16.87 M 48.96 16.87 L 52.08 17.11 L 48.72 17.11 L 48.96 16.87 M 52.08 17.11 L 48.72 17.11 L 52.08 17.11 M 48.72 17.11 L 52.08 17.11 L 48.72 17.11" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.08 17.11 L 48.72 17.11 L 52.32 17.35 L 52.08 17.11 M 48.72 17.11 L 52.32 17.35 L 48.48 17.35 L 48.72 17.11" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.32 17.35 L 48.48 17.35 L 52.32 17.59 L 52.32 17.35 M 48.48 17.35 L 52.32 17.59 L 48.48 17.59 L 48.48 17.35" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.32 17.59 L 48.48 17.59 L 52.32 17.83 L 52.32 17.59 M 48.48 17.59 L 52.32 17.83 L 48.24 17.83 L 48.48 17.59" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.56 17.83 L 52.56 17.83 L 48.24 17.83 L 52.56 17.83 L 48.24 17.83 L 52.32 17.83 L 52.56 17.83" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.56 17.83 L 48.24 17.83 L 52.56 18.07 L 52.56 17.83 M 48.24 17.83 L 52.56 18.07 L 48.24 18.07 L 48.24 17.83" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.56 18.07 L 48.24 18.07 L 52.56 18.31 L 52.56 18.07 M 48.24 18.07 L 52.56 18.31 L 48.24 18.31 L 48.24 18.07" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.56 18.31 L 48.24 18.31 L 52.56 18.55 L 52.56 18.31 M 48.24 18.31 L 52.56 18.55 L 48.24 18.55 L 48.24 18.31" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.56 18.55 L 48.24 18.55 L 52.56 18.79 L 52.56 18.55 M 48.24 18.55 L 52.56 18.79 L 48.24 18.79 L 48.24 18.55" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.56 18.79 L 48.24 18.79 L 52.56 19.03 L 52.56 18.79 M 48.24 18.79 L 52.56 19.03 L 48.24 19.03 L 48.24 18.79" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.56 19.03 L 48.24 19.03 L 52.56 19.27 L 52.56 19.03 M 48.24 19.03 L 52.56 19.27 L 48.24 19.27 L 48.24 19.03" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.32 19.27 L 52.32 19.27 L 48.24 19.27 L 52.32 19.27 L 48.24 19.27 L 52.56 19.27 L 52.32 19.27" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.32 19.27 L 48.24 19.27 L 52.32 19.51 L 52.32 19.27 M 48.24 19.27 L 52.32 19.51 L 48.48 19.51 L 48.24 19.27" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.32 19.51 L 48.48 19.51 L 52.32 19.75 L 52.32 19.51 M 48.48 19.51 L 52.32 19.75 L 48.48 19.75 L 48.48 19.51" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.32 19.75 L 48.48 19.75 L 52.08 19.99 L 52.32 19.75 M 48.48 19.75 L 52.08 19.99 L 48.72 19.99 L 48.48 19.75 M 52.08 19.99 L 48.72 19.99 L 52.08 19.99 M 48.72 19.99 L 52.08 19.99 L 48.72 19.99" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.08 19.99 L 48.72 19.99 L 51.84 20.23 L 52.08 19.99 M 48.72 19.99 L 51.84 20.23 L 48.96 20.23 L 48.72 19.99" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.84 20.23 L 48.96 20.23 L 51.6 20.47 L 51.84 20.23 M 48.96 20.23 L 51.6 20.47 L 49.2 20.47 L 48.96 20.23" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.36 20.47 L 51.36 20.47 L 49.2 20.47 L 51.36 20.47 L 49.2 20.47 L 51.6 20.47 L 51.36 20.47" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.36 20.47 L 49.2 20.47 L 51.36 20.47 M 49.2 20.47 L 51.36 20.47 L 49.44 20.47 L 49.2 20.47" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.36 20.47 L 49.44 20.47 L 51.12 20.71 L 51.36 20.47 M 49.44 20.47 L 51.12 20.71 L 49.68 20.71 L 49.44 20.47" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 51.12 20.71 L 49.68 20.71 L 50.88 20.71 L 51.12 20.71 M 49.68 20.71 L 50.88 20.71 L 49.92 20.71 L 49.68 20.71" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 50.88 20.71 L 50.64 20.71 L 49.92 20.71 L 50.88 20.71 M 50.64 20.71 L 49.92 20.71 L 50.64 20.71 M 49.92 20.71 L 50.64 20.71 L 50.4 20.71 L 49.92 20.71" fill="currentColor" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 26.47 L 25.2 10.63" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.2 10.63 L 56.64 10.63" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 10.63 L 56.64 26.47" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 26.47 L 25.2 26.47" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <text x="29.52" y="14.71" font-family="Arial, Helvetica, sans-serif" font-size="6.58" fill="currentColor">+</text>
+  <text x="49.2" y="14.71" font-family="Arial, Helvetica, sans-serif" font-size="6.58" fill="currentColor">-</text>
+</svg>

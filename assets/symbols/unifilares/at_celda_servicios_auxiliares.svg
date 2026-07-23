@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.63 144.72">
+  <path d="M 10.8 114.96 L 16.8 120.72" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 10.8 119.76 L 16.8 125.52" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 10.8 110.16 L 16.8 116.16" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 9.6 68.28 C 9.6 69.41 10.51 70.32 11.64 70.32 C 12.77 70.32 13.68 69.41 13.68 68.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 13.68 68.28 C 13.68 69.41 14.59 70.32 15.72 70.32 C 16.85 70.32 17.76 69.41 17.76 68.28" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 17.76 76.2 C 17.76 75.07 16.85 74.16 15.72 74.16 C 14.59 74.16 13.68 75.07 13.68 76.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 13.68 76.2 C 13.68 75.07 12.77 74.16 11.64 74.16 C 10.51 74.16 9.6 75.07 9.6 76.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 13.92 135.12 L 13.92 76.32" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 13.92 68.4 L 13.92 9.6" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <text x="26.16" y="71.52" font-family="Arial, Helvetica, sans-serif" font-size="3.51" fill="currentColor">CT AUX</text>
+  <text x="27.84" y="75.84" font-family="Arial, Helvetica, sans-serif" font-size="3.51" fill="currentColor">AT/BT</text>
+</svg>

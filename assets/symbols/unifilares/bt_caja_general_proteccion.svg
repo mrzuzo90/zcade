@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 82.08 50.64">
+  <path d="M 9.6 25.2 L 25.44 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 25.2 L 72.48 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 29.28 25.2 L 52.8 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.8 25.2 L 52.8 20.64" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.8 20.64 L 29.28 20.64" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 29.28 20.64 L 29.28 30" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 29.28 30 L 52.8 30" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.8 30 L 52.8 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.44 41.04 L 25.44 9.6" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.44 9.6 L 56.64 9.6" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 9.6 L 56.64 41.04" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 56.64 41.04 L 25.44 41.04" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 25.44 25.2 L 29.28 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+  <path d="M 52.8 25.2 L 56.64 25.2" fill="none" stroke="currentColor" stroke-width="2.88" stroke-linecap="round"/>
+</svg>

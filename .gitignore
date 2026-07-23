@@ -12,8 +12,10 @@ dist
 dist-ssr
 *.local
 
-# Claude Code local tooling (agent worktrees, local settings)
-.claude/
+# Claude Code local tooling (agent worktrees, local settings) — but project
+# skills (.claude/skills/) are shared and versioned
+.claude/*
+!.claude/skills/
 
 # Editor directories and files
 .vscode/*
