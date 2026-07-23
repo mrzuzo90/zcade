@@ -47,8 +47,15 @@ export interface ContactSegment {
    * - 'tripped': driven by this instance's own `tripped` input (thermal overload).
    * - 'latched': driven by this instance's own derived `latched` state (e.g. a
    *   latching emergency stop) — see engine/solver.ts's latch derivation.
+   * - 'timed': driven by this instance's own derived `timedActive` state (a
+   *   TON on-delay timer's 55-56 NO / 57-58 NC contacts) — see the
+   *   `timerElapsedMs`/`timedActive` fields on `ComponentRuntimeState`
+   *   (engine/solver.ts) for the tick-accumulation rules. Always
+   *   self-referential, same as 'tripped'/'latched': a timer's contacts
+   *   always follow *that instance's own* coil, never a cross-instance
+   *   `linkedTo` tag.
    */
-  control?: 'pressed' | 'coil' | 'tripped' | 'latched'
+  control?: 'pressed' | 'coil' | 'tripped' | 'latched' | 'timed'
   /**
    * Cross-instance control tag — only consulted when `control === 'coil'`.
    * A physically separate auxiliary contact block (its own ComponentInstance,
