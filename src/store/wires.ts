@@ -12,7 +12,10 @@ function sameEndpoint(a: WireEndpoint, b: WireEndpoint) {
 }
 
 function samePinPair(wire: Wire, from: WireEndpoint, to: WireEndpoint) {
-  return (sameEndpoint(wire.from, from) && sameEndpoint(wire.to, to)) || (sameEndpoint(wire.from, to) && sameEndpoint(wire.to, from))
+  return (
+    (sameEndpoint(wire.from, from) && sameEndpoint(wire.to, to)) ||
+    (sameEndpoint(wire.from, to) && sameEndpoint(wire.to, from))
+  )
 }
 
 interface WireStore {
@@ -31,6 +34,17 @@ interface WireStore {
   removeWiresForComponent: (componentId: string) => void
   setWireType: (id: string, wireType: WireType | undefined) => void
   selectWire: (id: string | null) => void
+
+  /**
+   * Replaces the entire wire set wholesale — used by `.zcade` file load (see
+   * `src/io/persistence.ts`) and "New Project". Same reasoning as
+   * `canvas.ts`'s `loadComponents`: bypasses history entirely (callers pair
+   * it with `useHistoryStore.getState().clear()`), preserves loaded ids
+   * verbatim, and bumps the id-generator counter past the highest numeric
+   * suffix seen so future `completeWire` calls can't collide with a
+   * restored wire id.
+   */
+  loadWires: (wires: Wire[]) => void
 }
 
 type WireSetter = (updater: (state: WireStore) => Partial<WireStore>) => void
@@ -72,7 +86,10 @@ class CompleteWireCommand implements Command {
       return {
         wires,
         order: state.order.filter((id) => id !== this.wire.id),
-        selectedWireId: state.selectedWireId === this.wire.id ? this.previousSelectedWireId : state.selectedWireId,
+        selectedWireId:
+          state.selectedWireId === this.wire.id
+            ? this.previousSelectedWireId
+            : state.selectedWireId,
       }
     })
   }
@@ -169,7 +186,9 @@ export const useWireStore = create<WireStore>((set, get) => {
         set({ pendingFrom: null })
         return null
       }
-      const duplicate = Object.values(wires).some((wire) => samePinPair(wire, pendingFrom, endpoint))
+      const duplicate = Object.values(wires).some((wire) =>
+        samePinPair(wire, pendingFrom, endpoint),
+      )
       if (duplicate) {
         set({ pendingFrom: null })
         return null
@@ -191,7 +210,9 @@ export const useWireStore = create<WireStore>((set, get) => {
       const existing = wires[id]
       if (!existing) return
       const index = order.indexOf(id)
-      useHistoryStore.getState().execute(new RemoveWireCommand(existing, index, selectedWireId, setter))
+      useHistoryStore
+        .getState()
+        .execute(new RemoveWireCommand(existing, index, selectedWireId, setter))
     },
 
     // Cascades to every wire touching `componentId`. Each wire is its own
@@ -217,9 +238,25 @@ export const useWireStore = create<WireStore>((set, get) => {
     setWireType: (id, wireType) => {
       const existing = get().wires[id]
       if (!existing) return
-      useHistoryStore.getState().execute(new SetWireTypeCommand(id, existing.wireType, wireType, setter))
+      useHistoryStore
+        .getState()
+        .execute(new SetWireTypeCommand(id, existing.wireType, wireType, setter))
     },
 
     selectWire: (id) => set({ selectedWireId: id, pendingFrom: null }),
+
+    loadWires: (wires) => {
+      const record: Record<string, Wire> = {}
+      const order: string[] = []
+      let maxSuffix = 0
+      for (const wire of wires) {
+        record[wire.id] = wire
+        order.push(wire.id)
+        const match = /_(\d+)$/.exec(wire.id)
+        if (match) maxSuffix = Math.max(maxSuffix, Number(match[1]))
+      }
+      nextWireId = Math.max(nextWireId, maxSuffix + 1)
+      set({ wires: record, order, selectedWireId: null, pendingFrom: null })
+    },
   }
 })
