@@ -1,4 +1,4 @@
-import type { ComponentInstance, Point, Rotation, Wire, WireType, Junction } from '@/types/circuit'
+import type { ComponentInstance, Crossing, Point, Rotation, Wire, WireType, Junction } from '@/types/circuit'
 import { getComponentDefinition } from '@/components/symbols/library'
 
 /** IEC 60617-standard colors, per the wire palette documented in CLAUDE.md. */
@@ -90,6 +90,60 @@ function pointsEqual(a: Point, b: Point): boolean {
   return Math.abs(a.x - b.x) < EPSILON && Math.abs(a.y - b.y) < EPSILON
 }
 
+function sameEndpointPin(
+  a: { componentId: string; pinId: string },
+  b: { componentId: string; pinId: string },
+): boolean {
+  return a.componentId === b.componentId && a.pinId === b.pinId
+}
+
+/**
+ * Applies a manual drag to one segment of a wire's rendered path, producing
+ * a new explicit `points` override (see Wire.points / getWirePath) that
+ * preserves both pin endpoints and the orthogonal (Manhattan) invariant of
+ * every segment in the path. This is the core geometry behind the
+ * waypoint-editing UI in WireLayer — its result is what gets committed via
+ * the history-backed `setWirePoints` wire-store command, so it's the only
+ * thing that ever needs testing in isolation from Konva/React.
+ *
+ * `segmentIndex` identifies the segment `path[segmentIndex] -> path[segmentIndex + 1]`.
+ * Only the component of `delta` perpendicular to that segment's own
+ * orientation is applied — dragging along a segment's own axis wouldn't
+ * change its rendered shape, so that component is dropped rather than
+ * silently producing a confusing no-op-looking edit.
+ *
+ * If the dragged segment touches a path endpoint (a pin — immovable), a new
+ * bend point is inserted at that end instead of relocating the pin; this is
+ * what lets even a bare 2-point (straight) or 3-point (single-elbow) wire
+ * gain its first manual jog. An interior segment (already a bend on both
+ * ends) is simply shifted in place with no new points needed: Manhattan
+ * routing alternates orientation segment-to-segment, so both neighboring
+ * segments stay perpendicular to the dragged one and merely get longer or
+ * shorter — see the accompanying tests for the geometric argument.
+ */
+export function dragWireSegment(path: Point[], segmentIndex: number, delta: Point): Point[] {
+  if (segmentIndex < 0 || segmentIndex >= path.length - 1) return path
+  const a = path[segmentIndex]
+  const b = path[segmentIndex + 1]
+  const horizontal = Math.abs(a.y - b.y) <= EPSILON
+  const perp: Point = horizontal ? { x: 0, y: delta.y } : { x: delta.x, y: 0 }
+  if (Math.abs(perp.x) < EPSILON && Math.abs(perp.y) < EPSILON) return path
+
+  const startIsEndpoint = segmentIndex === 0
+  const endIsEndpoint = segmentIndex === path.length - 2
+
+  const newStart: Point = { x: a.x + perp.x, y: a.y + perp.y }
+  const newEnd: Point = { x: b.x + perp.x, y: b.y + perp.y }
+
+  const before = path.slice(0, segmentIndex)
+  const after = path.slice(segmentIndex + 2)
+  const middle: Point[] = []
+  middle.push(...(startIsEndpoint ? [a, newStart] : [newStart]))
+  middle.push(...(endIsEndpoint ? [newEnd, b] : [newEnd]))
+
+  return [...before, ...middle, ...after]
+}
+
 /**
  * Finds T-junctions: points where one wire's endpoint pin lands on the
  * interior of another wire's routed segment (not on that other wire's own
@@ -108,39 +162,268 @@ function pointsEqual(a: Point, b: Point): boolean {
  * (verified via engine/solver.ts tests). Once manual waypoint editing ships,
  * a host wire the user explicitly routed through a pin reflects real intent
  * and this will start finding taps again with no further changes needed.
+ *
+ * `onlyInvolving`, if given, restricts the search to tap/host pairs where AT
+ * LEAST ONE side's wire id is in the set — every pair where neither wire is
+ * in the set is skipped entirely. This is purely a perf narrowing used by
+ * `WireGeometryCache`'s incremental recompute (a single component move only
+ * changes the handful of wires touching it, not all of them); omitting it
+ * (the default) reproduces the exact full O(wires²) behavior every existing
+ * caller (graph.ts, tests) already relies on, so this is additive and
+ * backward compatible.
  */
-export function findJunctions(wires: Wire[], components: Record<string, ComponentInstance>): Junction[] {
+export function findJunctions(
+  wires: Wire[],
+  components: Record<string, ComponentInstance>,
+  onlyInvolving?: Set<string>,
+): Junction[] {
   const paths = wires.map((wire) => ({ wire, path: getWirePath(wire, components) }))
   const junctions = new Map<string, Junction>()
 
-  for (const { wire: tapWire } of paths) {
+  // Only a wire with a manual `points` override can ever be a host (see doc
+  // comment above) — in any real schematic that's a small minority of wires,
+  // so narrowing the host candidate list up front turns the inner loop from
+  // O(all wires) into O(manually-routed wires) for every tapWire, not just
+  // the `onlyInvolving`-restricted case below.
+  const hostCandidates = paths.filter((p) => p.wire.points && p.wire.points.length >= 2)
+
+  function checkPair(tapWire: Wire, tapPoint: Point, hostWire: Wire, path: Point[]) {
+    if (hostWire.id === tapWire.id) return
+    const hostFrom = path[0]
+    const hostTo = path[path.length - 1]
+    if (pointsEqual(tapPoint, hostFrom) || pointsEqual(tapPoint, hostTo)) return
+
+    for (let i = 0; i < path.length - 1; i++) {
+      if (pointOnSegment(tapPoint, path[i], path[i + 1])) {
+        const key = `${Math.round(tapPoint.x)}:${Math.round(tapPoint.y)}`
+        const existing = junctions.get(key)
+        if (existing) {
+          if (!existing.wireIds.includes(tapWire.id)) existing.wireIds.push(tapWire.id)
+          if (!existing.wireIds.includes(hostWire.id)) existing.wireIds.push(hostWire.id)
+        } else {
+          junctions.set(key, { point: tapPoint, wireIds: [tapWire.id, hostWire.id] })
+        }
+        break
+      }
+    }
+  }
+
+  function checkTapWire(tapWire: Wire, hosts: typeof hostCandidates) {
     for (const endpoint of [tapWire.from, tapWire.to]) {
       const tapPoint = resolveEndpoint(components, endpoint)
       if (!tapPoint) continue
+      for (const { wire: hostWire, path } of hosts) {
+        if (path) checkPair(tapWire, tapPoint, hostWire, path)
+      }
+    }
+  }
 
-      for (const { wire: hostWire, path } of paths) {
-        if (hostWire.id === tapWire.id || !path) continue
-        if (!hostWire.points || hostWire.points.length < 2) continue
-        const hostFrom = path[0]
-        const hostTo = path[path.length - 1]
-        if (pointsEqual(tapPoint, hostFrom) || pointsEqual(tapPoint, hostTo)) continue
-
-        for (let i = 0; i < path.length - 1; i++) {
-          if (pointOnSegment(tapPoint, path[i], path[i + 1])) {
-            const key = `${Math.round(tapPoint.x)}:${Math.round(tapPoint.y)}`
-            const existing = junctions.get(key)
-            if (existing) {
-              if (!existing.wireIds.includes(tapWire.id)) existing.wireIds.push(tapWire.id)
-              if (!existing.wireIds.includes(hostWire.id)) existing.wireIds.push(hostWire.id)
-            } else {
-              junctions.set(key, { point: tapPoint, wireIds: [tapWire.id, hostWire.id] })
-            }
-            break
-          }
-        }
+  if (!onlyInvolving) {
+    for (const { wire: tapWire } of paths) checkTapWire(tapWire, hostCandidates)
+  } else {
+    // Every (tapWire, hostWire) ordered pair where at least one side is in
+    // `onlyInvolving`, visited exactly once, without ever iterating the full
+    // O(wires) tapWire loop: pass A covers every changed wire as tap (host
+    // list unrestricted, since an unchanged host can still gain/lose a tap
+    // relationship with a changed wire); pass B covers the remaining
+    // (unchanged) wires as tap, but only against changed hosts.
+    const changedHostCandidates = hostCandidates.filter((p) => onlyInvolving.has(p.wire.id))
+    for (const { wire: tapWire } of paths) {
+      if (onlyInvolving.has(tapWire.id)) {
+        checkTapWire(tapWire, hostCandidates)
+      } else {
+        checkTapWire(tapWire, changedHostCandidates)
       }
     }
   }
 
   return [...junctions.values()]
+}
+
+interface BBox {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+}
+
+function pathBBox(path: Point[]): BBox {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  for (const p of path) {
+    if (p.x < minX) minX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.x > maxX) maxX = p.x
+    if (p.y > maxY) maxY = p.y
+  }
+  return { minX, minY, maxX, maxY }
+}
+
+function bboxesOverlap(a: BBox, b: BBox): boolean {
+  return a.minX <= b.maxX && b.minX <= a.maxX && a.minY <= b.maxY && b.minY <= a.maxY
+}
+
+/**
+ * General 2D segment intersection (works for any pair of segments, though in
+ * practice ours are always axis-aligned). Returns null for parallel/collinear
+ * segments (denominator ~0 — treated as "no crossing" rather than reasoning
+ * about overlapping-collinear geometry, out of scope for this cosmetic
+ * feature) or when the intersection lands at or within EPS of either
+ * segment's own endpoint — that's a shared-connection or T-tap case, handled
+ * by completeWire's duplicate rejection / findJunctions respectively, never a
+ * "just crossing" case.
+ */
+function segmentIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Point | null {
+  const d1x = p2.x - p1.x
+  const d1y = p2.y - p1.y
+  const d2x = p4.x - p3.x
+  const d2y = p4.y - p3.y
+  const denom = d1x * d2y - d1y * d2x
+  if (Math.abs(denom) < 1e-9) return null
+
+  const t = ((p3.x - p1.x) * d2y - (p3.y - p1.y) * d2x) / denom
+  const u = ((p3.x - p1.x) * d1y - (p3.y - p1.y) * d1x) / denom
+  const EPS = 1e-6
+  if (t <= EPS || t >= 1 - EPS || u <= EPS || u >= 1 - EPS) return null
+
+  return { x: p1.x + t * d1x, y: p1.y + t * d1y }
+}
+
+/**
+ * Finds crossings: points where two wires' rendered paths pass over one
+ * another at a point interior to BOTH paths — neither wire's own endpoint,
+ * so never an electrical connection (that's findJunctions' job, and it only
+ * fires at an endpoint-on-segment-interior point, which segmentIntersection
+ * above deliberately excludes). Purely a rendering concern, consumed by
+ * WireLayer/pathWithHops to draw a small arc "hop" on one of the two wires.
+ *
+ * A per-wire bounding-box broad phase culls most pairs before any segment
+ * math runs — real schematics are sparse (most wire pairs are nowhere near
+ * each other), which keeps this well under budget even at hundreds of wires
+ * (see tests/engine/wiring-perf.test.ts). `onlyInvolving` has the same
+ * incremental-recompute meaning as on findJunctions.
+ */
+interface CrossingEntry {
+  wire: Wire
+  path: Point[]
+  bbox: BBox
+}
+
+function checkCrossingPair(a: CrossingEntry, b: CrossingEntry, crossings: Crossing[]) {
+  if (
+    sameEndpointPin(a.wire.from, b.wire.from) ||
+    sameEndpointPin(a.wire.from, b.wire.to) ||
+    sameEndpointPin(a.wire.to, b.wire.from) ||
+    sameEndpointPin(a.wire.to, b.wire.to)
+  ) {
+    return
+  }
+  if (!bboxesOverlap(a.bbox, b.bbox)) return
+
+  for (let si = 0; si < a.path.length - 1; si++) {
+    for (let sj = 0; sj < b.path.length - 1; sj++) {
+      const pt = segmentIntersection(a.path[si], a.path[si + 1], b.path[sj], b.path[sj + 1])
+      if (pt) {
+        crossings.push({ point: pt, wireIds: [a.wire.id, b.wire.id] })
+        return
+      }
+    }
+  }
+}
+
+export function findCrossings(
+  wires: Wire[],
+  components: Record<string, ComponentInstance>,
+  onlyInvolving?: Set<string>,
+): Crossing[] {
+  const entries: CrossingEntry[] = wires
+    .map((wire) => ({ wire, path: getWirePath(wire, components) }))
+    .filter((e): e is { wire: Wire; path: Point[] } => e.path !== null && e.path.length >= 2)
+    .map((e) => ({ ...e, bbox: pathBBox(e.path) }))
+
+  const crossings: Crossing[] = []
+
+  if (!onlyInvolving) {
+    for (let i = 0; i < entries.length; i++) {
+      for (let j = i + 1; j < entries.length; j++) {
+        checkCrossingPair(entries[i], entries[j], crossings)
+      }
+    }
+    return crossings
+  }
+
+  // Only unordered pairs where at least one wire is in `onlyInvolving`:
+  // changed-vs-changed (i<j within the small changed subset) plus
+  // changed-vs-unchanged (full cross product against the small changed
+  // subset) — never the O(wires²) unchanged-vs-unchanged combinations,
+  // which are provably unaffected and already retained by the caller.
+  const changed = entries.filter((e) => onlyInvolving.has(e.wire.id))
+  const unchanged = entries.filter((e) => !onlyInvolving.has(e.wire.id))
+
+  for (let i = 0; i < changed.length; i++) {
+    for (let j = i + 1; j < changed.length; j++) {
+      checkCrossingPair(changed[i], changed[j], crossings)
+    }
+  }
+  for (const c of changed) {
+    for (const u of unchanged) {
+      checkCrossingPair(c, u, crossings)
+    }
+  }
+
+  return crossings
+}
+
+const HOP_SAMPLES = 8
+
+/**
+ * Returns `path` with a small semicircular "hop" bump inserted at each point
+ * in `hopPoints` that lies on one of its segments — the visual counterpart
+ * to findCrossings. A hop this function inserts always fully connects back
+ * into the original polyline (same start/end, same overall route), so it's
+ * safe to feed the result straight into a Konva Line's `points` in place of
+ * the plain path.
+ *
+ * Hops too close to a segment's own ends (closer than `radius`) are skipped
+ * rather than drawn squashed/clipped — that segment is short enough relative
+ * to the hop that a plain crossing (no bump) reads fine.
+ */
+export function pathWithHops(path: Point[], hopPoints: Point[], radius = 8): Point[] {
+  if (hopPoints.length === 0 || path.length < 2) return path
+
+  const result: Point[] = [path[0]]
+  for (let i = 0; i < path.length - 1; i++) {
+    const segStart = path[i]
+    const segEnd = path[i + 1]
+    const dx = segEnd.x - segStart.x
+    const dy = segEnd.y - segStart.y
+    const len = Math.hypot(dx, dy)
+    if (len < EPSILON) {
+      result.push(segEnd)
+      continue
+    }
+    const dirX = dx / len
+    const dirY = dy / len
+    const perpX = -dirY
+    const perpY = dirX
+
+    const onSegment = hopPoints
+      .map((hp) => ({ hp, t: (hp.x - segStart.x) * dirX + (hp.y - segStart.y) * dirY }))
+      .filter(({ hp, t }) => t > radius && t < len - radius && pointOnSegment(hp, segStart, segEnd))
+      .sort((a, b) => a.t - b.t)
+
+    for (const { hp } of onSegment) {
+      for (let s = 0; s <= HOP_SAMPLES; s++) {
+        const theta = (Math.PI * s) / HOP_SAMPLES
+        result.push({
+          x: hp.x - dirX * radius * Math.cos(theta) + perpX * radius * Math.sin(theta),
+          y: hp.y - dirY * radius * Math.cos(theta) + perpY * radius * Math.sin(theta),
+        })
+      }
+    }
+    result.push(segEnd)
+  }
+  return result
 }

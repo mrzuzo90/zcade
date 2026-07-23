@@ -72,6 +72,24 @@ describe('wire store — command/undo/redo', () => {
     expect(useWireStore.getState().wires[id].wireType).toBe('L1')
   })
 
+  it('undoes and redoes setWirePoints (manual waypoint edit)', () => {
+    useWireStore.getState().startWire({ componentId: 'a', pinId: '1' })
+    const id = useWireStore.getState().completeWire({ componentId: 'b', pinId: '1' })!
+    useHistoryStore.getState().flush()
+    expect(useWireStore.getState().wires[id].points).toBeUndefined()
+
+    const points = [{ x: 0, y: 0 }, { x: 0, y: 20 }, { x: 100, y: 20 }, { x: 100, y: 0 }]
+    useWireStore.getState().setWirePoints(id, points)
+    useHistoryStore.getState().flush()
+    expect(useWireStore.getState().wires[id].points).toEqual(points)
+
+    useHistoryStore.getState().undo()
+    expect(useWireStore.getState().wires[id].points).toBeUndefined()
+
+    useHistoryStore.getState().redo()
+    expect(useWireStore.getState().wires[id].points).toEqual(points)
+  })
+
   it('removeWiresForComponent cascades as ONE undo step (transaction group)', () => {
     useWireStore.getState().startWire({ componentId: 'a', pinId: '1' })
     useWireStore.getState().completeWire({ componentId: 'b', pinId: '1' })

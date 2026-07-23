@@ -132,6 +132,19 @@ export interface Junction {
   wireIds: string[]
 }
 
+/**
+ * A crossing is two wires' rendered paths passing over one another at a
+ * point interior to BOTH paths (neither wire terminates there) — an
+ * unrelated overlap, never an electrical connection (that's what Junction
+ * is for). Purely a rendering concern (see engine/wiring.ts findCrossings /
+ * pathWithHops): rendered as a small arc "hop" on one of the two wires so it
+ * visually reads as passing over, not connecting to, the other.
+ */
+export interface Crossing {
+  point: Point
+  wireIds: [string, string]
+}
+
 /** A net is a set of pins held at the same potential, transitively joined by wires and junctions. */
 export interface NodeNet {
   id: string

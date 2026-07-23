@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Wire, WireEndpoint, WireType } from '@/types/circuit'
+import type { Point, Wire, WireEndpoint, WireType } from '@/types/circuit'
 import { useHistoryStore, type Command } from '@/store/history'
 
 let nextWireId = 1
@@ -33,6 +33,13 @@ interface WireStore {
   removeWire: (id: string) => void
   removeWiresForComponent: (componentId: string) => void
   setWireType: (id: string, wireType: WireType | undefined) => void
+  /**
+   * Sets (or clears, with `undefined`) a wire's manual routing override —
+   * the ROUTE Week 2 waypoint-editing entry point (see engine/wiring.ts
+   * `dragWireSegment`, which is what WireLayer uses to compute the `points`
+   * passed here). Same command-pattern/undo treatment as `setWireType`.
+   */
+  setWirePoints: (id: string, points: Point[] | undefined) => void
   selectWire: (id: string | null) => void
 
   /**
@@ -167,6 +174,37 @@ class SetWireTypeCommand implements Command {
   }
 }
 
+class SetWirePointsCommand implements Command {
+  readonly label = 'wires.setWirePoints'
+  private readonly id: string
+  private readonly from: Point[] | undefined
+  private readonly to: Point[] | undefined
+  private readonly set: WireSetter
+
+  constructor(id: string, from: Point[] | undefined, to: Point[] | undefined, set: WireSetter) {
+    this.id = id
+    this.from = from
+    this.to = to
+    this.set = set
+  }
+
+  private patch(points: Point[] | undefined) {
+    this.set((state) => {
+      const existing = state.wires[this.id]
+      if (!existing) return {}
+      return { wires: { ...state.wires, [this.id]: { ...existing, points } } }
+    })
+  }
+
+  do() {
+    this.patch(this.to)
+  }
+
+  undo() {
+    this.patch(this.from)
+  }
+}
+
 export const useWireStore = create<WireStore>((set, get) => {
   const setter: WireSetter = (updater) => set(updater)
 
@@ -241,6 +279,12 @@ export const useWireStore = create<WireStore>((set, get) => {
       useHistoryStore
         .getState()
         .execute(new SetWireTypeCommand(id, existing.wireType, wireType, setter))
+    },
+
+    setWirePoints: (id, points) => {
+      const existing = get().wires[id]
+      if (!existing) return
+      useHistoryStore.getState().execute(new SetWirePointsCommand(id, existing.points, points, setter))
     },
 
     selectWire: (id) => set({ selectedWireId: id, pendingFrom: null }),
