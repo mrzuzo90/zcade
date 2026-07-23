@@ -1,5 +1,23 @@
 import type { ComponentDefinition } from '@/types/circuit'
 
+/** IEC 60617 signaling-lamp lens colors (docs/component-catalog.md §9), keyed by `lamp` instances' `properties.color`. */
+export const LAMP_COLORS = {
+  red: '#ef4444',
+  green: '#22c55e',
+  yellow: '#eab308',
+  blue: '#3b82f6',
+  white: '#f9fafb',
+} as const
+
+export type LampColor = keyof typeof LAMP_COLORS
+
+export const DEFAULT_LAMP_COLOR: LampColor = 'red'
+
+/** Resolves a `lamp` instance's `properties.color` to a hex value, falling back to `DEFAULT_LAMP_COLOR` for unset/unrecognized values (never throws — a bad value just renders the default lens color). */
+export function resolveLampColor(color: unknown): string {
+  return LAMP_COLORS[color as LampColor] ?? LAMP_COLORS[DEFAULT_LAMP_COLOR]
+}
+
 /**
  * Component footprints use a 60px grid cell as their base unit so pins land
  * on grid intersections at the default gridSize (10px, see store/canvas.ts).
@@ -92,6 +110,15 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     ],
   },
 
+  // `properties.color` (per-instance, free-form — same "instance.properties.*"
+  // pattern as timer_ton's `presetMs`/aux_contact_block's `linkedTo`, no
+  // schema enforcement) selects the lens color per IEC signaling convention
+  // (Verde/Rojo/Amarillo/Azul/Blanco — docs/component-catalog.md §9).
+  // Defaults to `DEFAULT_LAMP_COLOR` when unset/unrecognized. Purely
+  // cosmetic — `lit` derivation in engine/solver.ts is unaffected; see
+  // `LAMP_COLORS` below and its use in ComponentSymbol.tsx (resolves to the
+  // `signalColor` SymbolRenderer prop, a fixed lens-fill color kept
+  // independent of the selection/energize `currentColor` convention).
   lamp: {
     type: 'lamp',
     label: 'H',
@@ -287,6 +314,88 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: 'U2', offset: { x: 15, y: 60 }, kind: 'power' },
       { id: 'V2', offset: { x: 30, y: 60 }, kind: 'power' },
       { id: 'W2', offset: { x: 45, y: 60 }, kind: 'power' },
+    ],
+  },
+
+  // ---------------------------------------------------------------------
+  // Phase A, Week 2 (SYM) — 3 trivial additions per docs/component-catalog.md,
+  // real symbols authored alongside (not placeholders — final pin layout).
+  // ---------------------------------------------------------------------
+
+  // 4-pole contactor: same coil/contact shape as contactor_3p, one more pole.
+  // Pole spacing tightened (20px vs contactor_3p's 30px) to fit 4 poles in
+  // the same 60x80 footprint/coil column — see docs/component-catalog.md §4
+  // ("Bornes: 1-2, 3-4, 5-6, 7-8").
+  contactor_4p: {
+    type: 'contactor_4p',
+    label: 'KM',
+    category: 'electrical',
+    width: 60,
+    height: 80,
+    pins: [
+      { id: '1', offset: { x: 0, y: 10 }, kind: 'power_no' },
+      { id: '2', offset: { x: 60, y: 10 }, kind: 'power_no' },
+      { id: '3', offset: { x: 0, y: 30 }, kind: 'power_no' },
+      { id: '4', offset: { x: 60, y: 30 }, kind: 'power_no' },
+      { id: '5', offset: { x: 0, y: 50 }, kind: 'power_no' },
+      { id: '6', offset: { x: 60, y: 50 }, kind: 'power_no' },
+      { id: '7', offset: { x: 0, y: 70 }, kind: 'power_no' },
+      { id: '8', offset: { x: 60, y: 70 }, kind: 'power_no' },
+      { id: 'A1', offset: { x: 30, y: 0 }, kind: 'coil', linkedTo: 'coil' },
+      { id: 'A2', offset: { x: 30, y: 80 }, kind: 'coil', linkedTo: 'coil' },
+    ],
+    contacts: [
+      { pins: ['1', '2'], behavior: 'no', control: 'coil' },
+      { pins: ['3', '4'], behavior: 'no', control: 'coil' },
+      { pins: ['5', '6'], behavior: 'no', control: 'coil' },
+      { pins: ['7', '8'], behavior: 'no', control: 'coil' },
+    ],
+  },
+
+  // Single-phase AC source: L/N/PE per CLAUDE.md's Power Source Pins table
+  // (Brown/Blue/Green-Yellow). `PotentialTag` has no generic "L" tag (only
+  // L1/L2/L3), so the single phase pin uses 'L1' — the same convention
+  // power_source_3p already established for phase potentials.
+  power_source_1p: {
+    type: 'power_source_1p',
+    label: 'L-N-PE',
+    category: 'electrical',
+    width: 60,
+    height: 30,
+    pins: [
+      { id: 'L', offset: { x: 0, y: 30 }, kind: 'power', potential: 'L1' },
+      { id: 'N', offset: { x: 30, y: 30 }, kind: 'power', potential: 'N' },
+      { id: 'PE', offset: { x: 60, y: 30 }, kind: 'power', potential: 'PE' },
+    ],
+  },
+
+  // Terminal strip / borne block (docs/component-catalog.md §15, "X1, X2...").
+  // 4 straight-through terminals, each modeled the same way as
+  // circuit_breaker_3p/thermal_overload_relay's pass-through power poles: a
+  // top and bottom pin per terminal bridged by an `always_closed` contact
+  // (no switching function — a terminal block is just a physical splice
+  // point between two sides of the cabinet wiring).
+  terminal_strip: {
+    type: 'terminal_strip',
+    label: 'X',
+    category: 'electrical',
+    width: 60,
+    height: 20,
+    pins: [
+      { id: '1', offset: { x: 0, y: 0 }, kind: 'power' },
+      { id: '1B', offset: { x: 0, y: 20 }, kind: 'power' },
+      { id: '2', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: '2B', offset: { x: 20, y: 20 }, kind: 'power' },
+      { id: '3', offset: { x: 40, y: 0 }, kind: 'power' },
+      { id: '3B', offset: { x: 40, y: 20 }, kind: 'power' },
+      { id: '4', offset: { x: 60, y: 0 }, kind: 'power' },
+      { id: '4B', offset: { x: 60, y: 20 }, kind: 'power' },
+    ],
+    contacts: [
+      { pins: ['1', '1B'], behavior: 'always_closed' },
+      { pins: ['2', '2B'], behavior: 'always_closed' },
+      { pins: ['3', '3B'], behavior: 'always_closed' },
+      { pins: ['4', '4B'], behavior: 'always_closed' },
     ],
   },
 }

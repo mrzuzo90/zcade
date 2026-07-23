@@ -44,6 +44,19 @@ export type ViewBox = [number, number, number, number]
  * `ComponentSymbol.tsx` already made for its hand-drawn `Rect` stroke. This
  * is what lets one authored SVG stay correct across selection/energize
  * state without needing separate "selected" layer variants.
+ *
+ * `stroke`/`fill` may ALSO be the literal string `"signalColor"` — a second,
+ * independent sentinel (added Phase A Week 2, SYM) substituted with
+ * `SymbolRenderer`'s `signalColor` prop instead of `statusColor`. This
+ * exists for the one case where a component's "live" fill must show a
+ * configurable color that ISN'T the generic selection/energize indicator —
+ * `lamp`'s lens, whose color is a per-instance property (IEC signaling
+ * red/green/yellow/blue/white, see `library.ts`'s `LAMP_COLORS`) and must
+ * stay visually distinct from the universal amber "this is energized" glow
+ * every other component uses. A path with no `signalColor` prop supplied
+ * falls back to `SymbolRenderer`'s default (matches the prior hardcoded
+ * amber lamp fill, so existing symbols that never opt into this are
+ * unaffected).
  */
 export interface SymbolPathDef {
   /** SVG path `d` attribute. */
