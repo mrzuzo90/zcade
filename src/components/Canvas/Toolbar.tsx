@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { MAX_SCALE, MIN_SCALE, useCanvasStore } from '@/store/canvas'
 import { useWireStore } from '@/store/wires'
 import { useSimulationStore } from '@/store/simulation'
+import { isTauri } from '@/io/fileSystem'
+import { useProjectStore } from '@/store/project'
 import type { WireType } from '@/types/circuit'
 
 const WIRE_TYPE_LABEL: Record<WireType, string> = {
@@ -39,9 +42,83 @@ export function Toolbar() {
   const startSimulation = useSimulationStore((s) => s.start)
   const stopSimulation = useSimulationStore((s) => s.stop)
 
+  const currentFilePath = useProjectStore((s) => s.currentFilePath)
+  const recentFiles = useProjectStore((s) => s.recentFiles)
+  const newProject = useProjectStore((s) => s.newProject)
+  const openProject = useProjectStore((s) => s.openProject)
+  const openRecentFile = useProjectStore((s) => s.openRecentFile)
+  const saveProject = useProjectStore((s) => s.saveProject)
+  const saveProjectAs = useProjectStore((s) => s.saveProjectAs)
+  const [fileError, setFileError] = useState<string | null>(null)
+
+  async function runFileOp(op: () => Promise<{ ok: boolean; error?: string }>) {
+    const result = await op()
+    setFileError(result.ok ? null : (result.error ?? null))
+  }
+
   return (
     <header className="flex h-11 items-center gap-3 border-b border-gray-800 bg-gray-950 px-3 text-sm text-gray-200">
       <span className="font-semibold text-gray-100">zCADe</span>
+      <div className="mx-2 h-5 w-px bg-gray-800" />
+      <button
+        className="rounded px-2 py-1 hover:bg-gray-800 disabled:opacity-30"
+        disabled={isRunning}
+        onClick={() => newProject()}
+      >
+        Nuevo
+      </button>
+      <button
+        className="rounded px-2 py-1 hover:bg-gray-800 disabled:opacity-30"
+        disabled={isRunning}
+        onClick={() => void runFileOp(openProject)}
+      >
+        Abrir…
+      </button>
+      <button
+        className="rounded px-2 py-1 hover:bg-gray-800 disabled:opacity-30"
+        disabled={isRunning}
+        onClick={() => void runFileOp(() => saveProject())}
+      >
+        Guardar
+      </button>
+      <button
+        className="rounded px-2 py-1 hover:bg-gray-800 disabled:opacity-30"
+        disabled={isRunning}
+        onClick={() => void runFileOp(() => saveProjectAs())}
+      >
+        Guardar como…
+      </button>
+      {isTauri() && recentFiles.length > 0 && (
+        <select
+          className="rounded border border-gray-800 bg-gray-900 px-1.5 py-1 text-gray-200 disabled:opacity-30"
+          disabled={isRunning}
+          value=""
+          onChange={(e) => {
+            const path = e.target.value
+            if (path) void runFileOp(() => openRecentFile(path))
+          }}
+        >
+          <option value="">Recientes…</option>
+          {recentFiles.map((path) => (
+            <option key={path} value={path}>
+              {path}
+            </option>
+          ))}
+        </select>
+      )}
+      {currentFilePath && (
+        <span className="max-w-40 truncate text-xs text-gray-500" title={currentFilePath}>
+          {currentFilePath}
+        </span>
+      )}
+      {fileError && (
+        <span
+          className="max-w-64 truncate rounded bg-red-950/60 px-2 py-0.5 text-xs text-red-300"
+          title={fileError}
+        >
+          {fileError}
+        </span>
+      )}
       <div className="mx-2 h-5 w-px bg-gray-800" />
       <button
         className={
@@ -60,7 +137,9 @@ export function Toolbar() {
       >
         −
       </button>
-      <span className="w-12 text-center tabular-nums text-gray-400">{Math.round(scale * 100)}%</span>
+      <span className="w-12 text-center tabular-nums text-gray-400">
+        {Math.round(scale * 100)}%
+      </span>
       <button
         className="rounded px-2 py-1 hover:bg-gray-800"
         onClick={() => setScale(Math.min(MAX_SCALE, scale * 1.2))}
@@ -111,7 +190,9 @@ export function Toolbar() {
             <select
               className="rounded border border-gray-800 bg-gray-900 px-1.5 py-1 text-gray-200"
               value={selectedWire.wireType ?? ''}
-              onChange={(e) => setWireType(selectedWire.id, (e.target.value || undefined) as WireType | undefined)}
+              onChange={(e) =>
+                setWireType(selectedWire.id, (e.target.value || undefined) as WireType | undefined)
+              }
             >
               <option value="">Sin asignar</option>
               {(Object.keys(WIRE_TYPE_LABEL) as WireType[]).map((type) => (

@@ -37,6 +37,22 @@ interface CanvasStore {
   zoomAt: (pointer: { x: number; y: number }, deltaScale: number) => void
   toggleGrid: () => void
   toggleSnap: () => void
+
+  /**
+   * Replaces the entire component set wholesale — used by `.zcade` file
+   * load (see `src/io/persistence.ts`) and "New Project". Deliberately
+   * bypasses the command/history layer entirely: loading a file is a fresh
+   * baseline, not a user edit to undo (mirrors `history.clear()`'s own doc
+   * comment — "e.g. on file load/new project"). Callers are responsible for
+   * calling `useHistoryStore.getState().clear()` alongside this.
+   *
+   * Also bumps the internal id-generator counter past the highest numeric
+   * suffix found in the loaded ids, so a subsequent `addComponent` call in
+   * the same session can never mint an id that collides with a restored
+   * one (loaded ids are preserved verbatim, not regenerated, since wires
+   * reference them by id).
+   */
+  loadComponents: (components: ComponentInstance[]) => void
 }
 
 type CanvasSetter = (updater: (state: CanvasStore) => Partial<CanvasStore>) => void
@@ -62,7 +78,12 @@ class MoveComponentCommand implements Command {
   private readonly to: { x: number; y: number }
   private readonly set: CanvasSetter
 
-  constructor(id: string, from: { x: number; y: number }, to: { x: number; y: number }, set: CanvasSetter) {
+  constructor(
+    id: string,
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    set: CanvasSetter,
+  ) {
     this.id = id
     this.from = from
     this.to = to
@@ -151,7 +172,8 @@ class AddComponentCommand implements Command {
       return {
         components,
         order: state.order.filter((id) => id !== this.instance.id),
-        selectedId: state.selectedId === this.instance.id ? this.previousSelectedId : state.selectedId,
+        selectedId:
+          state.selectedId === this.instance.id ? this.previousSelectedId : state.selectedId,
       }
     })
   }
@@ -165,7 +187,12 @@ class RemoveComponentCommand implements Command {
   private readonly previousSelectedId: string | null
   private readonly set: CanvasSetter
 
-  constructor(instance: ComponentInstance, index: number, previousSelectedId: string | null, set: CanvasSetter) {
+  constructor(
+    instance: ComponentInstance,
+    index: number,
+    previousSelectedId: string | null,
+    set: CanvasSetter,
+  ) {
     this.instance = instance
     this.index = index
     this.previousSelectedId = previousSelectedId
@@ -234,14 +261,18 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
       if (!existing) return
       const to = { x: snapEnabled ? snapToGrid(x) : x, y: snapEnabled ? snapToGrid(y) : y }
       if (to.x === existing.x && to.y === existing.y) return
-      useHistoryStore.getState().execute(new MoveComponentCommand(id, { x: existing.x, y: existing.y }, to, setter))
+      useHistoryStore
+        .getState()
+        .execute(new MoveComponentCommand(id, { x: existing.x, y: existing.y }, to, setter))
     },
 
     rotateComponent: (id, direction = 1) => {
       const existing = get().components[id]
       if (!existing) return
       const next = ((((existing.rotation + direction * 90) % 360) + 360) % 360) as Rotation
-      useHistoryStore.getState().execute(new RotateComponentCommand(id, existing.rotation, next, setter))
+      useHistoryStore
+        .getState()
+        .execute(new RotateComponentCommand(id, existing.rotation, next, setter))
     },
 
     removeComponent: (id) => {
@@ -249,7 +280,9 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
       const existing = components[id]
       if (!existing) return
       const index = order.indexOf(id)
-      useHistoryStore.getState().execute(new RemoveComponentCommand(existing, index, selectedId, setter))
+      useHistoryStore
+        .getState()
+        .execute(new RemoveComponentCommand(existing, index, selectedId, setter))
     },
 
     selectComponent: (id) => set({ selectedId: id }),
@@ -273,5 +306,19 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
 
     toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
     toggleSnap: () => set((state) => ({ snapEnabled: !state.snapEnabled })),
+
+    loadComponents: (components) => {
+      const record: Record<string, ComponentInstance> = {}
+      const order: string[] = []
+      let maxSuffix = 0
+      for (const component of components) {
+        record[component.id] = component
+        order.push(component.id)
+        const match = /_(\d+)$/.exec(component.id)
+        if (match) maxSuffix = Math.max(maxSuffix, Number(match[1]))
+      }
+      nextId = Math.max(nextId, maxSuffix + 1)
+      set({ components: record, order, selectedId: null })
+    },
   }
 })
