@@ -412,3 +412,250 @@ describe('evaluateCircuit — motor', () => {
     expect(componentStates.m.motorRunning).toBe(false)
   })
 })
+
+describe('evaluateCircuit — TON on-delay timer (55-56 NO / 57-58 NC)', () => {
+  // src.+24V -> timer.A1 (coil directly energized) ; timer.A2 -> src.0V
+  // src.+24V -> timer.55 -> lamp.1 ; src.0V -> lamp.2   (NO timed contact drives a lamp)
+  // preset = 60ms = 3 ticks at the solver's 20ms tick, per instance.properties.presetMs.
+  function directWiredTimer(presetMs: number) {
+    const components: Record<string, ComponentInstance> = {
+      src: instance({ id: 'src', type: 'power_source_dc', x: 0, y: 0 }),
+      timer: instance({ id: 'timer', type: 'timer_ton', x: 100, y: 0, properties: { presetMs } }),
+      lamp: instance({ id: 'lamp', type: 'lamp', x: 200, y: 0 }),
+    }
+    const wires: Wire[] = [
+      { id: 'w1', from: { componentId: 'src', pinId: '+24V' }, to: { componentId: 'timer', pinId: 'A1' } },
+      { id: 'w2', from: { componentId: 'timer', pinId: 'A2' }, to: { componentId: 'src', pinId: '0V' } },
+      { id: 'w3', from: { componentId: 'src', pinId: '+24V' }, to: { componentId: 'timer', pinId: '55' } },
+      { id: 'w4', from: { componentId: 'timer', pinId: '56' }, to: { componentId: 'lamp', pinId: '1' } },
+      { id: 'w5', from: { componentId: 'src', pinId: '0V' }, to: { componentId: 'lamp', pinId: '2' } },
+    ]
+    return { components, wires }
+  }
+
+  it('energizes the coil immediately, but the 55-56 NO contact does not flip on the very first tick', () => {
+    const { components, wires } = directWiredTimer(60)
+    const { componentStates } = evaluateCircuit(components, wires, {})
+    expect(componentStates.timer.coilEnergized).toBe(true)
+    expect(componentStates.timer.timedActive).toBe(false)
+    expect(componentStates.lamp.lit).toBe(false)
+  })
+
+  it('flips the timed contact at exactly the tick the accumulated time reaches the preset, not before', () => {
+    const { components, wires } = directWiredTimer(60) // 60ms preset = 3 ticks of 20ms
+    let states: Record<string, ComponentRuntimeState> = {}
+
+    // Ticks 1-3: still below preset (elapsed reaches 0, 20, 40ms after ticks 1-3
+    // respectively, due to the one-tick lag documented on timerElapsedMs).
+    for (let i = 0; i < 3; i++) {
+      states = evaluateCircuit(components, wires, states).componentStates
+      expect(states.timer.timedActive).toBe(false)
+      expect(states.lamp.lit).toBe(false)
+    }
+
+    // Tick 4: elapsed reaches 60ms === preset -> flips this tick.
+    states = evaluateCircuit(components, wires, states).componentStates
+    expect(states.timer.timedActive).toBe(true)
+    expect(states.lamp.lit).toBe(true)
+  })
+
+  it('the 57-58 NC contact starts closed and opens once the timer times out', () => {
+    const { components, wires: baseWires } = directWiredTimer(60)
+    const lamp2Id = 'lamp2'
+    const components2 = {
+      ...components,
+      [lamp2Id]: instance({ id: lamp2Id, type: 'lamp', x: 300, y: 0 }),
+    }
+    const wires: Wire[] = [
+      ...baseWires,
+      { id: 'w6', from: { componentId: 'src', pinId: '+24V' }, to: { componentId: 'timer', pinId: '57' } },
+      { id: 'w7', from: { componentId: 'timer', pinId: '58' }, to: { componentId: lamp2Id, pinId: '1' } },
+      { id: 'w8', from: { componentId: 'src', pinId: '0V' }, to: { componentId: lamp2Id, pinId: '2' } },
+    ]
+
+    let states: Record<string, ComponentRuntimeState> = {}
+    states = evaluateCircuit(components2, wires, states).componentStates
+    expect(states[lamp2Id].lit).toBe(true) // NC still closed, timer not yet timed out
+
+    for (let i = 0; i < 3; i++) {
+      states = evaluateCircuit(components2, wires, states).componentStates
+    }
+    expect(states.timer.timedActive).toBe(true)
+    expect(states[lamp2Id].lit).toBe(false) // NC opened once timed out
+  })
+
+  it('resets the elapsed time to 0 (not gradually) once the coil de-energizes', () => {
+    // Coil driven through a momentary start button (no seal-in) so it can be
+    // de-energized mid-test.
+    const components: Record<string, ComponentInstance> = {
+      src: instance({ id: 'src', type: 'power_source_dc', x: 0, y: 0 }),
+      start: instance({ id: 'start', type: 'push_button_no', x: 100, y: 0 }),
+      timer: instance({ id: 'timer', type: 'timer_ton', x: 200, y: 0, properties: { presetMs: 60 } }),
+    }
+    const wires: Wire[] = [
+      { id: 'w1', from: { componentId: 'src', pinId: '+24V' }, to: { componentId: 'start', pinId: '13' } },
+      { id: 'w2', from: { componentId: 'start', pinId: '14' }, to: { componentId: 'timer', pinId: 'A1' } },
+      { id: 'w3', from: { componentId: 'timer', pinId: 'A2' }, to: { componentId: 'src', pinId: '0V' } },
+    ]
+
+    let states: Record<string, ComponentRuntimeState> = {}
+    states = withPressed(states, 'start', true)
+    // Accumulate for a few ticks while held (elapsed grows: 0, 20, 40ms).
+    for (let i = 0; i < 3; i++) {
+      states = evaluateCircuit(components, wires, states).componentStates
+    }
+    expect(states.timer.timerElapsedMs).toBeGreaterThan(0)
+
+    states = withPressed(states, 'start', false)
+    // One more tick still reflects the previous tick's energized state (the
+    // documented one-tick lag), then the tick after that must show a hard
+    // reset to 0 — never a gradual decay.
+    states = evaluateCircuit(components, wires, states).componentStates
+    states = evaluateCircuit(components, wires, states).componentStates
+    expect(states.timer.coilEnergized).toBe(false)
+    expect(states.timer.timerElapsedMs).toBe(0)
+    expect(states.timer.timedActive).toBe(false)
+  })
+
+  it('uses a sane default preset when instance.properties.presetMs is not set', () => {
+    const { components, wires } = directWiredTimer(undefined as unknown as number)
+    delete (components.timer.properties as Record<string, unknown>).presetMs
+    const { componentStates } = evaluateCircuit(components, wires, {})
+    // Should not throw and should not instantly time out on tick 1.
+    expect(componentStates.timer.timedActive).toBe(false)
+    expect(typeof componentStates.timer.timerElapsedMs).toBe('number')
+  })
+
+  it('remains stable (no oscillation) across many consecutive ticks once timed out, while the coil stays continuously energized', () => {
+    const { components, wires } = directWiredTimer(60)
+    let states: Record<string, ComponentRuntimeState> = {}
+    for (let i = 0; i < 4; i++) {
+      states = evaluateCircuit(components, wires, states).componentStates
+    }
+    expect(states.timer.timedActive).toBe(true)
+
+    let previousElapsed = states.timer.timerElapsedMs ?? 0
+    for (let tick = 0; tick < 20; tick++) {
+      states = evaluateCircuit(components, wires, states).componentStates
+      // Never flips back to false once timed out and still energized.
+      expect(states.timer.timedActive).toBe(true)
+      expect(states.timer.coilEnergized).toBe(true)
+      expect(states.lamp.lit).toBe(true)
+      // Elapsed keeps growing by exactly one tick's worth — monotonic, not
+      // oscillating — this is the expected (not a bug) behavior for an
+      // unbounded accumulator, unlike the boolean derived states above.
+      expect(states.timer.timerElapsedMs).toBe((previousElapsed ?? 0) + 20)
+      previousElapsed = states.timer.timerElapsedMs ?? 0
+    }
+  })
+})
+
+describe('evaluateCircuit — 6-wire motor (U1V1W1/U2V2W2) Y-Δ wiring detection', () => {
+  const components: Record<string, ComponentInstance> = {
+    src: instance({ id: 'src', type: 'power_source_3p', x: 0, y: 0 }),
+    m: instance({ id: 'm', type: 'motor_3p_6wire', x: 200, y: 0 }),
+  }
+
+  function feedWires(): Wire[] {
+    return [
+      { id: 'w1', from: { componentId: 'src', pinId: 'L1' }, to: { componentId: 'm', pinId: 'U1' } },
+      { id: 'w2', from: { componentId: 'src', pinId: 'L2' }, to: { componentId: 'm', pinId: 'V1' } },
+      { id: 'w3', from: { componentId: 'src', pinId: 'L3' }, to: { componentId: 'm', pinId: 'W1' } },
+    ]
+  }
+
+  it('detects star (Y) wiring when U2-V2-W2 are shorted together', () => {
+    const wires: Wire[] = [
+      ...feedWires(),
+      { id: 'w4', from: { componentId: 'm', pinId: 'U2' }, to: { componentId: 'm', pinId: 'V2' } },
+      { id: 'w5', from: { componentId: 'm', pinId: 'V2' }, to: { componentId: 'm', pinId: 'W2' } },
+    ]
+    const { componentStates } = evaluateCircuit(components, wires, {})
+    expect(componentStates.m.motorWiring).toBe('star')
+    expect(componentStates.m.motorRunning).toBe(true)
+    expect(componentStates.m.motorDirection).toBe('CCW')
+  })
+
+  it('detects delta (Δ) wiring when U2-V1, V2-W1, W2-U1 are jumpered', () => {
+    const wires: Wire[] = [
+      ...feedWires(),
+      { id: 'w4', from: { componentId: 'm', pinId: 'U2' }, to: { componentId: 'm', pinId: 'V1' } },
+      { id: 'w5', from: { componentId: 'm', pinId: 'V2' }, to: { componentId: 'm', pinId: 'W1' } },
+      { id: 'w6', from: { componentId: 'm', pinId: 'W2' }, to: { componentId: 'm', pinId: 'U1' } },
+    ]
+    const { componentStates } = evaluateCircuit(components, wires, {})
+    expect(componentStates.m.motorWiring).toBe('delta')
+    expect(componentStates.m.motorRunning).toBe(true)
+  })
+
+  it('also detects the reverse-cyclic delta jumper pattern (U2-W1, V2-U1, W2-V1)', () => {
+    const wires: Wire[] = [
+      ...feedWires(),
+      { id: 'w4', from: { componentId: 'm', pinId: 'U2' }, to: { componentId: 'm', pinId: 'W1' } },
+      { id: 'w5', from: { componentId: 'm', pinId: 'V2' }, to: { componentId: 'm', pinId: 'U1' } },
+      { id: 'w6', from: { componentId: 'm', pinId: 'W2' }, to: { componentId: 'm', pinId: 'V1' } },
+    ]
+    const { componentStates } = evaluateCircuit(components, wires, {})
+    expect(componentStates.m.motorWiring).toBe('delta')
+  })
+
+  it('reports "none" when U2/V2/W2 are left entirely unwired', () => {
+    const wires: Wire[] = feedWires()
+    const { componentStates } = evaluateCircuit(components, wires, {})
+    expect(componentStates.m.motorWiring).toBe('none')
+    expect(componentStates.m.motorRunning).toBe(true) // still runs, just no Y/Δ pattern detected
+  })
+
+  it('reports "none" for a partial/ambiguous jumper pattern rather than guessing', () => {
+    const wires: Wire[] = [
+      ...feedWires(),
+      // Only two of the three star jumpers present.
+      { id: 'w4', from: { componentId: 'm', pinId: 'U2' }, to: { componentId: 'm', pinId: 'V2' } },
+    ]
+    const { componentStates } = evaluateCircuit(components, wires, {})
+    expect(componentStates.m.motorWiring).toBe('none')
+  })
+
+  it('remains a stable fixed point across many consecutive ticks with static star wiring (no oscillation)', () => {
+    const wires: Wire[] = [
+      ...feedWires(),
+      { id: 'w4', from: { componentId: 'm', pinId: 'U2' }, to: { componentId: 'm', pinId: 'V2' } },
+      { id: 'w5', from: { componentId: 'm', pinId: 'V2' }, to: { componentId: 'm', pinId: 'W2' } },
+    ]
+    let states: Record<string, ComponentRuntimeState> = {}
+    let previous: ComponentRuntimeState | undefined
+    for (let tick = 0; tick < 20; tick++) {
+      states = evaluateCircuit(components, wires, states).componentStates
+      expect(states.m.motorWiring).toBe('star')
+      if (previous) expect(states.m).toEqual(previous)
+      previous = states.m
+    }
+  })
+})
+
+describe('evaluateCircuit — L-L short detection (flag only, no physics)', () => {
+  it('flags a net that carries two incompatible potential tags (L1 shorted to L2)', () => {
+    const components: Record<string, ComponentInstance> = {
+      src: instance({ id: 'src', type: 'power_source_3p', x: 0, y: 0 }),
+    }
+    const wires: Wire[] = [
+      { id: 'w1', from: { componentId: 'src', pinId: 'L1' }, to: { componentId: 'src', pinId: 'L2' } },
+    ]
+    const { shortedNetIds, netPotentials } = evaluateCircuit(components, wires, {})
+    expect(shortedNetIds.length).toBe(1)
+    expect(netPotentials[shortedNetIds[0]].sort()).toEqual(['L1', 'L2'])
+  })
+
+  it('does not flag a normal circuit with no shorted nets', () => {
+    const components: Record<string, ComponentInstance> = {
+      src: instance({ id: 'src', type: 'power_source_dc', x: 0, y: 0 }),
+      lamp: instance({ id: 'lamp', type: 'lamp', x: 100, y: 0 }),
+    }
+    const wires: Wire[] = [
+      { id: 'w1', from: { componentId: 'src', pinId: '+24V' }, to: { componentId: 'lamp', pinId: '1' } },
+      { id: 'w2', from: { componentId: 'src', pinId: '0V' }, to: { componentId: 'lamp', pinId: '2' } },
+    ]
+    const { shortedNetIds } = evaluateCircuit(components, wires, {})
+    expect(shortedNetIds).toEqual([])
+  })
+})

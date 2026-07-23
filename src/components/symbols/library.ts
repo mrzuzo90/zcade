@@ -223,6 +223,72 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     ],
     contacts: [{ pins: ['1', '2'], behavior: 'nc', control: 'latched' }],
   },
+
+  // ---------------------------------------------------------------------
+  // Phase A, Week 2 (SOLV) — TON timer + 6-wire Y-Δ motor. Same placeholder-
+  // pin-layout caveat as the block above (pending SYM's real IEC symbols):
+  // do not treat width/height/offsets here as final.
+  // ---------------------------------------------------------------------
+
+  // TON (on-delay) timer relay: bundles the A1-A2 coil with its 55-56 (NO)/
+  // 57-58 (NC) timed contacts in one component, per docs/component-catalog.md
+  // §8 and COMPLETE_PROJECT_ROADMAP.md's Change Log v1.1 correction — a bare
+  // coil with no contact to switch can't drive any of the three canonical
+  // circuits. `label: 'KT'` follows the common IEC timing-relay convention
+  // ("K" relay + "T" timed); the catalog/CLAUDE.md don't specify a prefix for
+  // this component, unlike KM/Q/F/S/H/M/Y which are explicitly called out.
+  // See engine/solver.ts's `timerElapsedMs`/`timedActive` derivation for the
+  // tick-accumulation rules (accumulates only while A1-A2 is energized,
+  // reset to 0 the tick after it drops) and `instance.properties.presetMs`
+  // for the per-instance preset (defaults to `DEFAULT_TON_PRESET_MS` if unset).
+  timer_ton: {
+    type: 'timer_ton',
+    label: 'KT',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'A1', offset: { x: 0, y: 0 }, kind: 'coil', linkedTo: 'coil' },
+      { id: 'A2', offset: { x: 40, y: 0 }, kind: 'coil', linkedTo: 'coil' },
+      { id: '55', offset: { x: 0, y: 20 }, kind: 'auxiliary_no' },
+      { id: '56', offset: { x: 40, y: 20 }, kind: 'auxiliary_no' },
+      { id: '57', offset: { x: 0, y: 40 }, kind: 'auxiliary_nc' },
+      { id: '58', offset: { x: 40, y: 40 }, kind: 'auxiliary_nc' },
+    ],
+    contacts: [
+      { pins: ['55', '56'], behavior: 'no', control: 'timed' },
+      { pins: ['57', '58'], behavior: 'nc', control: 'timed' },
+    ],
+  },
+
+  // 6-wire (double-star) 3-phase motor: U1-V1-W1 are the line-side feed
+  // terminals, U2-V2-W2 are the winding-end terminals whose external
+  // jumpering (not any internal switch on this component) determines Star
+  // (Y) vs Delta (Δ) configuration — docs/component-catalog.md §5. No
+  // internal `contacts`: like `motor_3p`, this is a pure external-pin load,
+  // and its role (motorRunning/motorDirection/motorWiring) is derived
+  // generically in engine/solver.ts from having exactly 6 `kind: 'power'`
+  // pins with no `potential` and no `contacts` — see the pin-kind-derives-
+  // role convention documented on `ComponentRuntimeState`. The specific
+  // U1/V1/W1/U2/V2/W2 *names* (not just the count of 6) are what
+  // `detectMotorWiring()` looks up, since Y/Δ jumper-pattern detection is
+  // necessarily keyed to this exact IEC terminal convention — the same
+  // trade-off already accepted for the 3-pin `motor_3p`'s U/V/W lookup.
+  motor_3p_6wire: {
+    type: 'motor_3p_6wire',
+    label: 'M',
+    category: 'electrical',
+    width: 90,
+    height: 60,
+    pins: [
+      { id: 'U1', offset: { x: 15, y: 0 }, kind: 'power' },
+      { id: 'V1', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'W1', offset: { x: 45, y: 0 }, kind: 'power' },
+      { id: 'U2', offset: { x: 15, y: 60 }, kind: 'power' },
+      { id: 'V2', offset: { x: 30, y: 60 }, kind: 'power' },
+      { id: 'W2', offset: { x: 45, y: 60 }, kind: 'power' },
+    ],
+  },
 }
 
 export function getComponentDefinition(type: string): ComponentDefinition {

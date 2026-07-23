@@ -369,6 +369,27 @@ Completed 2026-07-23, per `COMPLETE_PROJECT_ROADMAP.md`'s Phase A launch sequenc
 
 ---
 
+## Implementation Status (Phase A — Week 2, SOLV: TON timer + 6-wire motor Y/Δ + L-L short detection)
+
+Built on branch `phaseA/solv-ton-ydelta`, on top of the Week 1 integration commit above. **Not yet merged to `main` — pending Tech Lead review of the `src/types/circuit.ts` diff (contract freeze), same as Week 1.**
+
+**Contract change (`src/types/circuit.ts`, needs sign-off)**: `ContactSegment.control` gained `'timed'` alongside `'pressed'`/`'coil'`/`'tripped'`/`'latched'` — always self-referential (a timer's 55-56/57-58 contacts always follow that same instance's own `timedActive`, never a cross-instance `linkedTo` tag).
+
+**What's in place**:
+- `src/engine/solver.ts` — TON on-delay timing: `ComponentRuntimeState.timerElapsedMs`/`timedActive`. The tick counter is computed **once per `evaluateCircuit()` call, before the 8-iteration relaxation loop**, seeded from `previousStates[id].coilEnergized` (not recomputed inside the loop, and not from any value derived within the current tick) — accumulates by `TICK_MS` (a local constant, `20`, duplicated from `store/simulation.ts`'s `TICK_MS` rather than imported, to keep `engine/` decoupled from `store/`) for every tick the coil was energized on the *previous* tick, hard-resets to 0 the tick after it drops. This introduces a one-tick lag between the coil's own energize/de-energize transition and the counter starting/stopping — the same class of settling lag the existing seal-in `coilEnergized` seeding already has, and it's covered by `tests/engine/solver.test.ts`'s "flips at exactly the right tick, not before" test.
+- `src/engine/solver.ts` — 6-wire motor Y/Δ detection: `ComponentRuntimeState.motorWiring: 'star' | 'delta' | 'none'`, derived generically (exactly 6 `kind: 'power'` pins, no `potential`, no `contacts`) alongside `motorRunning`/`motorDirection`, which now also cover the 6-pin case (previously only 3-pin). `detectMotorWiring()` inspects the same per-tick net grouping already built for everything else: 'star' when U2/V2/W2 all land on one net; 'delta' when U2-V1/V2-W1/W2-U1 (or the reverse-cyclic U2-W1/V2-U1/W2-V1) each land on the same net — anything else (unwired, partial) reports `'none'`, same "don't guess" philosophy as `motorDirection`'s `'unknown'`.
+- `src/engine/solver.ts` — L-L short detection: `SimulationSnapshot.shortedNetIds`, a flat filter of the solver's already-computed `netPotentials` for any net with 2+ distinct `PotentialTag`s. Flag only, no current/fault modeling (unchanged from the Phase 3 design decision) — left for a future ERC rule / operate-mode overlay to consume.
+- `src/components/symbols/library.ts` — `timer_ton` (A1/A2 coil + 55-56 NO + 57-58 NC in one component, per the Roadmap Change Log v1.1 correction — not a bare coil) and `motor_3p_6wire` (U1/V1/W1/U2/V2/W2, no internal `contacts` — Y/Δ configuration is purely external wiring, matching `docs/component-catalog.md` §5). Both are placeholder pin layouts pending SYM's symbols, appended after `emergency_stop` to minimize merge collision with SYM's parallel Week 2 branch.
+- `tests/helpers/circuits.ts` / `tests/integration/y-delta.test.ts` — `buildYDelta()` is now implemented for real (was a documented throwing stub) and the canonical circuit #3 test is un-skipped. Zero star/delta overlap falls out of the topology for free (both contactors are driven from the same timer's complementary NC/57-58 and NO/55-56 contacts, derived from one `timedActive` boolean within a single tick) — no separate interlock mechanism was needed. Like `buildFwdRev()`, it's a maintained-start approximation (`start` held for the whole test): `useCanvasStore.addComponent` still has no action for setting an instance's `label` post-creation, so cross-instance `linkedTo` still can't distinguish km1/km2/km3, and km1 (line) has no spare pole for its own seal-in (all 3 carry motor current). `presetMs` is patched onto the timer instance via a direct `useCanvasStore.setState()` call (no store action exists for editing `properties` post-creation) so tests run in a handful of ticks instead of the 150-tick default.
+
+**Key design decision**: the TON tick counter's one-tick lag (reads `previousStates`, never the current tick's own freshly-computed state) is deliberate, not an oversight — it's what guarantees the counter advances by exactly one tick's worth of time per real simulation tick regardless of how many of the (up to 8) relaxation iterations run inside a single `evaluateCircuit()` call. Computing it from a value derived *within* the current tick's iterations would risk the counter advancing a variable, non-deterministic amount per tick depending on how many iterations happened to run.
+
+**Not yet built**: symbol/visual work for `timer_ton`/`motor_3p_6wire` (SYM); an ERC rule consuming `shortedNetIds` (ERC role); ganging `motorWiring` into `ComponentSymbol.tsx`'s operate-mode visuals.
+
+**Verified working**: `npm run type-check`, `npm run lint`, `npm run test` (165/168 passing, 3 intentionally skipped — undo-fuzz and persistence-roundtrip, both still blocked on CORE's Week 2 work), `npm run build`.
+
+---
+
 ## Critical Requirements & Constraints
 
 ### Offline-First & Connectivity
