@@ -1,0 +1,36 @@
+<svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    Latching emergency-stop pushbutton (red mushroom-head actuator,
+    twist-to-release). NC contact bridge is default-closed like
+    push_button_nc; pressing it drives the solver's derived `latched` state
+    (not the momentary `pressed` alone), so the open (red) blade stays shown
+    across ticks until an explicit resetRequested clears it — see
+    ComponentRuntimeState.latched / library.ts's emergency_stop comment.
+  -->
+  <g id="layer:base">
+    <path d="M0,10 L14,10" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M26,10 L40,10" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M14,7 L14,13" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M26,7 L26,13" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M20,10 L20,7" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M20,1 A3,3 0 1,0 20,7 A3,3 0 1,0 20,1 Z" fill="#dc2626" stroke="currentColor" stroke-width="1"/>
+  </g>
+  <g id="layer:contact-1-2-open">
+    <path d="M14,10 L26,3" stroke="#dc2626" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-1-2-closed">
+    <path d="M14,10 L26,10" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="1" data-pin-kind="auxiliary_nc" cx="0" cy="10" r="1"/>
+    <circle data-pin-id="2" data-pin-kind="auxiliary_nc" cx="40" cy="10" r="1"/>
+  </g>
+  <metadata id="stateLayers">
+    {
+      "base": "base",
+      "contacts": {
+        "1-2": { "open": "contact-1-2-open", "closed": "contact-1-2-closed" }
+      }
+    }
+  </metadata>
+</svg>

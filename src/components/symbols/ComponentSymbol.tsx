@@ -1,14 +1,17 @@
 import { Circle, Group, Line, Rect, Text } from 'react-konva'
 import type Konva from 'konva'
 import { useEffect, useState } from 'react'
-import type { ComponentInstance, ContactSegment } from '@/types/circuit'
-import { getComponentDefinition } from '@/components/symbols/library'
+import type { ComponentInstance } from '@/types/circuit'
+import { getComponentDefinition, resolveLampColor } from '@/components/symbols/library'
 import { getSymbolDefinition } from '@/components/symbols/symbolRegistry'
 import { SymbolRenderer } from '@/components/symbols/SymbolRenderer'
+import { isContactClosed } from '@/components/symbols/contactState'
 import { snapToGrid } from '@/store/canvas'
 import { useWireStore } from '@/store/wires'
 import { useSimulationStore } from '@/store/simulation'
-import type { ComponentRuntimeState } from '@/engine/solver'
+
+/** Component types that render an animated rotor (see the rAF effect below) — both the 3-wire and 6-wire 3-phase motors. */
+const ROTATING_MOTOR_TYPES = new Set(['motor_3p', 'motor_3p_6wire'])
 
 const PIN_COLOR: Record<string, string> = {
   power: '#f59e0b',
@@ -22,24 +25,6 @@ const PIN_COLOR: Record<string, string> = {
 
 /** Degrees per millisecond the rotor sweeps while running — purely cosmetic, not simulation-truth. */
 const ROTOR_SPEED = 0.25
-
-/**
- * Mirrors `isSegmentClosed` in `engine/solver.ts` (SOLV-owned — not imported,
- * since it isn't exported and this file must not edit that module). This is
- * purely a rendering decision (which symbol layer variant to show), not a
- * simulation input: the solver already applied the real version of this
- * logic when it computed `runtimeState`, so a mismatch here can only ever
- * make the drawing look wrong, never change circuit behavior.
- */
-function isContactClosed(
-  segment: ContactSegment,
-  state: ComponentRuntimeState | undefined,
-): boolean {
-  if (segment.behavior === 'always_closed') return true
-  const active =
-    segment.control === 'pressed' ? (state?.pressed ?? false) : (state?.coilEnergized ?? false)
-  return segment.behavior === 'no' ? active : !active
-}
 
 interface ComponentSymbolProps {
   instance: ComponentInstance
@@ -81,9 +66,16 @@ export function ComponentSymbol({
       isContactClosed(segment, runtimeState),
     ]),
   )
+  // Only `lamp` ever supplies a non-default `signalColor` — every other
+  // symbol's paths simply don't use the `"signalColor"` sentinel, so passing
+  // `undefined` for them is a no-op (SymbolRenderer falls back to its own
+  // default). See library.ts's LAMP_COLORS / resolveLampColor and the
+  // schema.ts doc comment on the sentinel.
+  const signalColor =
+    instance.type === 'lamp' ? resolveLampColor(instance.properties.color) : undefined
 
   useEffect(() => {
-    if (instance.type !== 'motor_3p' || !runtimeState?.motorRunning) return
+    if (!ROTATING_MOTOR_TYPES.has(instance.type) || !runtimeState?.motorRunning) return
     const direction = runtimeState.motorDirection === 'CW' ? 1 : -1
     let frameId: number
     let lastTime = performance.now()
@@ -154,6 +146,7 @@ export function ComponentSymbol({
           width={def.width}
           height={def.height}
           statusColor={strokeColor}
+          signalColor={signalColor}
           energized={isEnergized}
           contactClosed={contactClosed}
           bodyFill={isPressedNow ? '#111827' : 'transparent'}
@@ -181,7 +174,7 @@ export function ComponentSymbol({
         fill="#e5e7eb"
         fontSize={12}
       />
-      {instance.type === 'motor_3p' && (
+      {ROTATING_MOTOR_TYPES.has(instance.type) && (
         <Group x={halfW} y={halfH} rotation={rotorAngle} listening={false}>
           <Circle radius={Math.min(halfW, halfH) - 6} stroke="#6b7280" strokeWidth={1} />
           <Line
@@ -191,6 +184,27 @@ export function ComponentSymbol({
           />
         </Group>
       )}
+      {instance.type === 'motor_3p_6wire' &&
+        (runtimeState?.motorWiring === 'star' || runtimeState?.motorWiring === 'delta') && (
+          // Small external-wiring-configuration badge (Y/Δ) — ganging
+          // `motorWiring` (SOLV, Week 2) into the symbol's visuals, called
+          // out as "Not yet built" in CLAUDE.md's Phase A W2 SOLV section.
+          // Purely a rendering readout of already-solved state, same as the
+          // rotor direction arrow above.
+          <Text
+            text={runtimeState.motorWiring === 'star' ? 'Y' : 'Δ'}
+            x={halfW - 8}
+            y={def.height - 16}
+            width={16}
+            height={16}
+            align="center"
+            verticalAlign="middle"
+            fill="#f59e0b"
+            fontSize={12}
+            fontStyle="bold"
+            listening={false}
+          />
+        )}
       {def.pins.map((pin) => {
         const isPending = pendingFrom?.componentId === instance.id && pendingFrom.pinId === pin.id
         const isHovered = hoveredPin === pin.id

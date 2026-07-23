@@ -1,0 +1,90 @@
+<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    4-pole contactor. Same coil-column style as contactor_3p, one more pole
+    (spacing tightened from 30px to 20px to fit 4 poles in the same 60x80
+    footprint — see library.ts's contactor_4p comment).
+  -->
+  <g id="layer:base">
+    <path d="M24,4 L36,4 L36,76 L24,76 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M30,0 L30,4" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M30,76 L30,80" stroke="currentColor" stroke-width="1.5"/>
+
+    <path d="M0,10 L20,10" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,10 L60,10" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M20,7 L20,13" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,7 L40,13" stroke="currentColor" stroke-width="1.5"/>
+
+    <path d="M0,30 L20,30" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,30 L60,30" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M20,27 L20,33" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,27 L40,33" stroke="currentColor" stroke-width="1.5"/>
+
+    <path d="M0,50 L20,50" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,50 L60,50" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M20,47 L20,53" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,47 L40,53" stroke="currentColor" stroke-width="1.5"/>
+
+    <path d="M0,70 L20,70" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,70 L60,70" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M20,67 L20,73" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M40,67 L40,73" stroke="currentColor" stroke-width="1.5"/>
+  </g>
+
+  <g id="layer:energized">
+    <path d="M24,4 L36,4 L36,76 L24,76 Z" fill="#f59e0b" opacity="0.3"/>
+  </g>
+
+  <g id="layer:contact-1-2-open">
+    <path d="M20,10 L40,0" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-1-2-closed">
+    <path d="M20,10 L40,10" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <g id="layer:contact-3-4-open">
+    <path d="M20,30 L40,20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-3-4-closed">
+    <path d="M20,30 L40,30" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <g id="layer:contact-5-6-open">
+    <path d="M20,50 L40,40" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-5-6-closed">
+    <path d="M20,50 L40,50" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <g id="layer:contact-7-8-open">
+    <path d="M20,70 L40,60" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-7-8-closed">
+    <path d="M20,70 L40,70" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <g id="pins">
+    <circle data-pin-id="1" data-pin-kind="power_no" cx="0" cy="10" r="1"/>
+    <circle data-pin-id="2" data-pin-kind="power_no" cx="60" cy="10" r="1"/>
+    <circle data-pin-id="3" data-pin-kind="power_no" cx="0" cy="30" r="1"/>
+    <circle data-pin-id="4" data-pin-kind="power_no" cx="60" cy="30" r="1"/>
+    <circle data-pin-id="5" data-pin-kind="power_no" cx="0" cy="50" r="1"/>
+    <circle data-pin-id="6" data-pin-kind="power_no" cx="60" cy="50" r="1"/>
+    <circle data-pin-id="7" data-pin-kind="power_no" cx="0" cy="70" r="1"/>
+    <circle data-pin-id="8" data-pin-kind="power_no" cx="60" cy="70" r="1"/>
+    <circle data-pin-id="A1" data-pin-kind="coil" cx="30" cy="0" r="1"/>
+    <circle data-pin-id="A2" data-pin-kind="coil" cx="30" cy="80" r="1"/>
+  </g>
+
+  <metadata id="stateLayers">
+    {
+      "base": "base",
+      "energized": "energized",
+      "contacts": {
+        "1-2": { "open": "contact-1-2-open", "closed": "contact-1-2-closed" },
+        "3-4": { "open": "contact-3-4-open", "closed": "contact-3-4-closed" },
+        "5-6": { "open": "contact-5-6-open", "closed": "contact-5-6-closed" },
+        "7-8": { "open": "contact-7-8-open", "closed": "contact-7-8-closed" }
+      }
+    }
+  </metadata>
+</svg>

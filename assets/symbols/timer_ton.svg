@@ -1,0 +1,65 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    TON (on-delay) timer relay. Coil box (A1/A2, elbow leads since the pins
+    sit at the top corners y=0 while the box itself is inset) with a small
+    clock-face glyph distinguishing it from a bare contactor/relay coil; two
+    timed contacts below it, 55-56 (NO, default open) and 57-58 (NC, default
+    closed) — both driven by this instance's own `timedActive`
+    (ComponentRuntimeState, see engine/solver.ts), never a cross-instance tag.
+  -->
+  <g id="layer:base">
+    <path d="M0,0 L0,8 L10,8" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M40,0 L40,8 L30,8" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M10,2 L30,2 L30,14 L10,14 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M20,4 A4,4 0 1,0 20,12 A4,4 0 1,0 20,4 Z" stroke="currentColor" stroke-width="1" fill="none"/>
+    <path d="M20,8 L20,5 M20,8 L23,8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+
+    <path d="M0,20 L14,20" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M26,20 L40,20" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M14,17 L14,23" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M26,17 L26,23" stroke="currentColor" stroke-width="1.5"/>
+
+    <path d="M0,40 L14,40" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M26,40 L40,40" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M14,37 L14,43" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M26,37 L26,43" stroke="currentColor" stroke-width="1.5"/>
+  </g>
+
+  <g id="layer:energized">
+    <path d="M10,2 L30,2 L30,14 L10,14 Z" fill="#f59e0b" opacity="0.3"/>
+  </g>
+
+  <g id="layer:contact-55-56-open">
+    <path d="M14,20 L26,13" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-55-56-closed">
+    <path d="M14,20 L26,20" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <g id="layer:contact-57-58-open">
+    <path d="M14,40 L26,33" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-57-58-closed">
+    <path d="M14,40 L26,40" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <g id="pins">
+    <circle data-pin-id="A1" data-pin-kind="coil" cx="0" cy="0" r="1"/>
+    <circle data-pin-id="A2" data-pin-kind="coil" cx="40" cy="0" r="1"/>
+    <circle data-pin-id="55" data-pin-kind="auxiliary_no" cx="0" cy="20" r="1"/>
+    <circle data-pin-id="56" data-pin-kind="auxiliary_no" cx="40" cy="20" r="1"/>
+    <circle data-pin-id="57" data-pin-kind="auxiliary_nc" cx="0" cy="40" r="1"/>
+    <circle data-pin-id="58" data-pin-kind="auxiliary_nc" cx="40" cy="40" r="1"/>
+  </g>
+
+  <metadata id="stateLayers">
+    {
+      "base": "base",
+      "energized": "energized",
+      "contacts": {
+        "55-56": { "open": "contact-55-56-open", "closed": "contact-55-56-closed" },
+        "57-58": { "open": "contact-57-58-open", "closed": "contact-57-58-closed" }
+      }
+    }
+  </metadata>
+</svg>

@@ -10,6 +10,15 @@ interface SymbolRendererProps {
   height: number
   /** Substituted for any path's literal `"currentColor"` fill/stroke (see schema.ts doc comment). */
   statusColor: string
+  /**
+   * Substituted for any path's literal `"signalColor"` fill/stroke — a
+   * second, independent sentinel for a component-specific configurable
+   * color (currently only `lamp`'s lens) that must stay visually distinct
+   * from the universal `statusColor` energize/selection indicator. Defaults
+   * to the same amber used everywhere else so a symbol that never uses the
+   * sentinel renders identically to before it existed.
+   */
+  signalColor?: string
   /** True when the component is "live" (coil energized / lamp lit / motor running). */
   energized: boolean
   /** Per contact-segment key (`"<pinA>-<pinB>"`), whether that segment is currently closed. Segments absent from `def.stateLayers.contacts` are ignored — nothing to swap for them. */
@@ -18,17 +27,30 @@ interface SymbolRendererProps {
   bodyFill?: string
 }
 
-function resolveColor(value: string | undefined, statusColor: string): string | undefined {
-  return value === 'currentColor' ? statusColor : value
+const DEFAULT_SIGNAL_COLOR = '#f59e0b'
+
+function resolveColor(
+  value: string | undefined,
+  statusColor: string,
+  signalColor: string,
+): string | undefined {
+  if (value === 'currentColor') return statusColor
+  if (value === 'signalColor') return signalColor
+  return value
 }
 
-function renderPath(path: SymbolPathDef, index: number, statusColor: string) {
+function renderPath(
+  path: SymbolPathDef,
+  index: number,
+  statusColor: string,
+  signalColor: string,
+) {
   return (
     <Path
       key={index}
       data={path.d}
-      fill={resolveColor(path.fill, statusColor)}
-      stroke={resolveColor(path.stroke, statusColor)}
+      fill={resolveColor(path.fill, statusColor, signalColor)}
+      stroke={resolveColor(path.stroke, statusColor, signalColor)}
       strokeWidth={path.strokeWidth ?? 1}
       fillRule={path.fillRule}
       lineCap={path.lineCap}
@@ -61,10 +83,12 @@ export function SymbolRenderer({
   width,
   height,
   statusColor,
+  signalColor,
   energized,
   contactClosed,
   bodyFill,
 }: SymbolRendererProps) {
+  const resolvedSignalColor = signalColor ?? DEFAULT_SIGNAL_COLOR
   const [, , vbWidth, vbHeight] = def.viewBox
   const scaleX = vbWidth === 0 ? 1 : width / vbWidth
   const scaleY = vbHeight === 0 ? 1 : height / vbHeight
@@ -83,7 +107,9 @@ export function SymbolRenderer({
       <Group scaleX={scaleX} scaleY={scaleY}>
         {activeLayerIds.map((layerId) => (
           <Fragment key={layerId}>
-            {layerPaths(def, layerId).map((path, i) => renderPath(path, i, statusColor))}
+            {layerPaths(def, layerId).map((path, i) =>
+              renderPath(path, i, statusColor, resolvedSignalColor),
+            )}
           </Fragment>
         ))}
       </Group>
