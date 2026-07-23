@@ -18,20 +18,40 @@
  *     see the note on `contactor_3p` in `src/components/symbols/library.ts`
  *     and the identical approximation already used by
  *     `tests/engine/solver.test.ts`. A dedicated 13-14 aux block with
- *     cross-instance `linkedTo` does not exist yet (SOLV, Phase A, in flight).
- *   - buildFwdRev(): buildable *without* the interlock — the solver has no
- *     cross-instance contact control yet, so KM1 cannot electrically block
- *     KM2. This helper wires two independent forward/reverse contactor
- *     branches with no seal-in and no interlock; each direction is asserted
- *     in isolation. See fwd-rev.test.ts's skipped interlock test.
+ *     cross-instance `linkedTo` landed since (SOLV, Phase A), but upgrading
+ *     buildDOL() itself to the full topology is tracked separately (test
+ *     plan Section 7) and out of scope for this session.
+ *   - buildFwdRev(): buildable *without* the interlock — two independent
+ *     forward/reverse contactor branches with no seal-in and no interlock;
+ *     each direction is asserted in isolation. Still used as-is by
+ *     fwd-rev.test.ts's non-interlock assertions.
+ *   - buildFwdRevInterlocked(): the REAL interlocked circuit, now that SOLV's
+ *     cross-instance `ContactSegment.linkedTo` resolution
+ *     (`resolveCoilControlState()` in `src/engine/solver.ts`) has landed on
+ *     `main`. Builds on top of buildFwdRev() — see its own doc comment below
+ *     for why it needs direct `useCanvasStore.setState()` patches (no store
+ *     setter exists yet for relabeling an instance or setting arbitrary
+ *     `properties`).
  *   - buildYDelta(): NOT buildable — no TON timer and no 6-wire motor exist
  *     in this worktree yet. The function is a documented stub that throws,
  *     so a test which forgets it's blocked fails loudly instead of silently
- *     no-op-passing. See y-delta.test.ts.
+ *     no-op-passing. See y-delta.test.ts. (Still genuinely blocked — do not
+ *     touch, per this session's directory-ownership note.)
  */
 
 import { useCanvasStore } from '@/store/canvas'
 import { useWireStore } from '@/store/wires'
+import type { Wire, WireEndpoint } from '@/types/circuit'
+
+/**
+ * Local equivalent of `wires.ts`'s internal (unexported) `samePinPair` — used
+ * only to locate a specific already-drawn wire by its pin endpoints (e.g. to
+ * remove/replace it), never to duplicate the store's own dedup logic.
+ */
+function wireMatchesEndpoints(wire: Wire, a: WireEndpoint, b: WireEndpoint): boolean {
+  const same = (x: WireEndpoint, y: WireEndpoint) => x.componentId === y.componentId && x.pinId === y.pinId
+  return (same(wire.from, a) && same(wire.to, b)) || (same(wire.from, b) && same(wire.to, a))
+}
 
 /** Resets the canvas + wire stores to their documented initial shape (mirrors the reset helpers already used in tests/integration/*.test.ts). */
 export function resetEditorStores(): void {
@@ -174,6 +194,86 @@ export function buildFwdRev(): FwdRevCircuit {
   connect(km2Id, 'A2', controlId, '0V')
 
   return { mainsId, breakerId, controlId, km1Id, km2Id, motorId, start1Id, stop1Id, start2Id, stop2Id }
+}
+
+export interface FwdRevInterlockedCircuit extends FwdRevCircuit {
+  auxKm1NcId: string
+  auxKm2NcId: string
+}
+
+/**
+ * Forward-Reverse WITH the real electrical interlock — now buildable, since
+ * SOLV's cross-instance linked-contact resolution
+ * (`resolveCoilControlState()` in `src/engine/solver.ts`,
+ * `ContactSegment.linkedTo` in `src/types/circuit.ts`) landed on `main`.
+ *
+ * Builds on `buildFwdRev()`'s topology, then:
+ *   1. Relabels km1/km2 to distinct labels ('KM1'/'KM2'). This is required
+ *      because `resolveCoilControlState` resolves a tag by scanning for
+ *      *another* instance whose `label` equals the tag — and
+ *      `contactor_3p`'s shared `ComponentDefinition.label` ('KM') is
+ *      otherwise identical on every instance, so a tag of 'KM' would be
+ *      ambiguous between km1 and km2.
+ *   2. Adds one `aux_contact_block_no`-sibling `aux_contact_block_nc`
+ *      instance per contactor, each with `properties.linkedTo` set to the
+ *      OTHER contactor's label — i.e. auxKm1NcId tracks KM1's own coil via
+ *      `properties.linkedTo: 'KM1'`, and is spliced into KM2's coil path (and
+ *      vice versa for auxKm2NcId/KM2/KM1). This is the actual electrical
+ *      interlock: KM1 running holds ITS OWN aux contact open, which — being
+ *      wired in series with KM2's coil — prevents KM2 from ever energizing
+ *      while KM1 is energized, and vice versa.
+ *
+ * Both the relabel and the `properties.linkedTo` assignment go through
+ * `useCanvasStore.setState()` directly rather than a dedicated store method,
+ * because none exists yet: `addComponent` (src/store/canvas.ts) hardcodes
+ * `label: def.label` and `properties: {}` with no setter to change either
+ * afterwards. This mirrors `resetEditorStores()`'s existing use of
+ * `setState()` for fixture setup above — it is fixture/test-setup, not a
+ * user-driven content mutation a real editor session would perform, so it's
+ * deliberately NOT routed through the command/history layer (nothing here
+ * needs to be undoable).
+ */
+export function buildFwdRevInterlocked(): FwdRevInterlockedCircuit {
+  const base = buildFwdRev()
+
+  useCanvasStore.setState((state) => ({
+    components: {
+      ...state.components,
+      [base.km1Id]: { ...state.components[base.km1Id], label: 'KM1' },
+      [base.km2Id]: { ...state.components[base.km2Id], label: 'KM2' },
+    },
+  }))
+
+  const canvas = useCanvasStore.getState()
+  const auxKm1NcId = canvas.addComponent('aux_contact_block_nc', 300, 200)
+  const auxKm2NcId = canvas.addComponent('aux_contact_block_nc', 300, 300)
+
+  useCanvasStore.setState((state) => ({
+    components: {
+      ...state.components,
+      [auxKm1NcId]: { ...state.components[auxKm1NcId], properties: { linkedTo: 'KM1' } },
+      [auxKm2NcId]: { ...state.components[auxKm2NcId], properties: { linkedTo: 'KM2' } },
+    },
+  }))
+
+  // Splice each aux contact into the OTHER contactor's coil path, replacing
+  // the direct start-button -> A1 wire buildFwdRev() made.
+  const wireStore = useWireStore.getState()
+  const startToKm1 = Object.values(wireStore.wires).find((w) => wireMatchesEndpoints(w, { componentId: base.start1Id, pinId: '14' }, { componentId: base.km1Id, pinId: 'A1' }))
+  const startToKm2 = Object.values(wireStore.wires).find((w) => wireMatchesEndpoints(w, { componentId: base.start2Id, pinId: '14' }, { componentId: base.km2Id, pinId: 'A1' }))
+  if (!startToKm1 || !startToKm2) {
+    throw new Error('buildFwdRevInterlocked: expected buildFwdRev() to have wired start1/2 -> A1 directly')
+  }
+  wireStore.removeWire(startToKm1.id)
+  wireStore.removeWire(startToKm2.id)
+
+  connect(base.start1Id, '14', auxKm2NcId, '21')
+  connect(auxKm2NcId, '22', base.km1Id, 'A1')
+
+  connect(base.start2Id, '14', auxKm1NcId, '21')
+  connect(auxKm1NcId, '22', base.km2Id, 'A1')
+
+  return { ...base, auxKm1NcId, auxKm2NcId }
 }
 
 /**
