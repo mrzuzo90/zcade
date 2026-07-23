@@ -365,13 +365,13 @@ Completed 2026-07-23, per `COMPLETE_PROJECT_ROADMAP.md`'s Phase A launch sequenc
 
 **Verified working** (on `main`, post-integration): `npm run type-check`, `npm run lint`, `npm run test` (146/150 passing, 4 intentionally skipped per above), `npm run build`. All 5 Week 1 branches merged with zero file-level conflicts.
 
-**Not yet built** (Week 2, per roadmap Section 2): manual wire waypoint editing + arc-hop rendering + incremental re-route (ROUTE); `.zcade` save/load + autosave + i18n scaffold (CORE); TON timer + 6-wire motor Y/Δ + L-L short detection (SOLV); remaining 17+ Tier 2 symbols + zoom stress-test audit (SYM); ERC rule framework (new role, onboards Day 5); un-skipping QA's stubbed tests once the above land.
+**Week 2 status** (per roadmap Section 2 — see the dedicated Week 2 sections below for full detail): manual wire waypoint editing + arc-hop rendering + incremental re-route (ROUTE) ✅, `.zcade` save/load + autosave (CORE) ✅, TON timer + 6-wire motor Y/Δ + L-L short detection (SOLV) ✅, remaining symbols + zoom stress-test audit (SYM) ✅, QA's stubbed tests un-skipped ✅. Still not started: i18n scaffold (CORE, deferred out of its Week 2 dispatch) and the ERC rule framework (new role, never onboarded).
 
 ---
 
 ## Implementation Status (Phase A — Week 2, SOLV: TON timer + 6-wire motor Y/Δ + L-L short detection)
 
-Built on branch `phaseA/solv-ton-ydelta`, on top of the Week 1 integration commit above. **Not yet merged to `main` — pending Tech Lead review of the `src/types/circuit.ts` diff (contract freeze), same as Week 1.**
+Built on branch `phaseA/solv-ton-ydelta`, on top of the Week 1 integration commit above. **Merged to `main` 2026-07-24** alongside the rest of Phase A Week 2 (SYM/CORE/ROUTE sections below) — the contract change noted here was reviewed and accepted as part of that integration.
 
 **Contract change (`src/types/circuit.ts`, needs sign-off)**: `ContactSegment.control` gained `'timed'` alongside `'pressed'`/`'coil'`/`'tripped'`/`'latched'` — always self-referential (a timer's 55-56/57-58 contacts always follow that same instance's own `timedActive`, never a cross-instance `linkedTo` tag).
 
@@ -392,7 +392,7 @@ Built on branch `phaseA/solv-ton-ydelta`, on top of the Week 1 integration commi
 
 ## Implementation Status (Phase A — Week 2, CORE: `.zcade` save/load + autosave + recent files)
 
-Built on branch `phaseA/core-w2-persistence`, on top of the Week 1/Week 2-SOLV integration commit above (`544121a`). **Not yet merged to `main` — pending Tech Lead review**, same as the other Week 2 streams. i18n scaffold (roadmap Section 2 W2 D9-10) was explicitly out of scope for this dispatch and is not touched.
+Built on branch `phaseA/core-w2-persistence`, on top of the Week 1/Week 2-SOLV integration commit above (`544121a`). **Merged to `main` 2026-07-24** alongside the rest of Phase A Week 2. i18n scaffold (roadmap Section 2 W2 D9-10) was explicitly out of scope for this dispatch and remains un-started — see the Week 2 wrap-up section below.
 
 **What's in place**:
 - `src/io/schema.ts` — the `.zcade` file types (`ZcadeFile`/`ZcadeMeta`) and `validateZcadeFile()`, a hand-rolled (no schema-validation library dependency) validator that never throws: any malformed/foreign JSON always comes back as `{ ok: false, error }` with a specific, human-readable message (unknown component type, dangling wire endpoint reference, bad rotation, duplicate id, unsupported major version, ...), never a crash or a silently half-loaded circuit. `components`/`wires` reuse the real `ComponentInstance`/`Wire` types from `src/types/circuit.ts` field-for-field (pin references as `{ componentId, pinId }` objects) rather than round-tripping through the doc's illustrative `"comp_km1:1"` concatenated-string shorthand — see the file's header comment for why that's a deliberate reading of this doc's own "reference pins by id, not coordinates" principle, not a deviation from it. Only the **major** version is enforced (`1.x.x` accepted, everything else rejected) so minor/patch bumps stay load-compatible.
@@ -415,7 +415,63 @@ Built on branch `phaseA/core-w2-persistence`, on top of the Week 1/Week 2-SOLV i
 
 **Not yet built**: i18n scaffold (out of scope for this dispatch, per the roadmap's own D9-10 split); a real end-to-end exercise of the native Tauri file dialogs/fs scope in an actual `npm run tauri dev` window (only `cargo check` + the mocked-unit-test level was verified this session); PLC program persistence (`plcPrograms` always serializes as `{}` — no PLC runtime exists yet, Phase 4).
 
+**Open decision awaiting Zuzo's sign-off**: the `{componentId, pinId}` wire-reference shape above (vs. this doc's own illustrative `"comp_km1:1"` string format) is live in `main` now but was never explicitly confirmed — flagging again here since the longer this stands the more code ends up assuming the object shape.
+
 **Verified working**: `npm run type-check`, `npm run lint`, `npm run test` (216/216 passing — the persistence round-trip test is un-skipped and green, and the fuzz/Fwd-Rev tests QA un-skipped in Week 1 remain green), `npm run build`. `cargo check` in `src-tauri/` also passes (Rust side compiles with the two new plugins registered), though no native Tauri window was run this session — see the fs-scope caveat above.
+
+---
+
+## Implementation Status (Phase A — Week 2, SYM: remaining Tier 1 symbols + lamp color + zoom audit)
+
+Built on branch `phaseA/sym-w2-symbols`, on top of the Week 1/Week 2-SOLV/QA integration commit (`544121a`). **Merged to `main` 2026-07-24** alongside the rest of Phase A Week 2.
+
+**What's in place**:
+- `assets/symbols/*.svg` — real (simplified, IEC 60617-style placeholder) artwork for the 6 component types SOLV had already given final pins/contacts to in Week 1/2: `emergency_stop`, `aux_contact_block_no`/`_nc`, `thermal_overload_relay`, `timer_ton`, `motor_3p_6wire`. Pins/contacts on these were left untouched — only symbol art + registry entries were added. `thermal_overload_relay`'s two trip contacts are given distinct rendering: the 95-96 (NC) trip contact reads red when tripped/open (a "something is wrong" indicator), the 97-98 (NO) fault-signal contact reads green when tripped/closed (the contact that's meant to close and drive a fault lamp) — so the two don't look identical despite being driven by the same underlying `tripped` state.
+- `src/components/symbols/library.ts` — 3 new component types: `contactor_4p` (4-pole, same pattern as `contactor_3p` — 4× `power_no` contact pairs + A1/A2 coil), `power_source_1p` (single-phase L/N/PE; `L` uses the `'L1'` `PotentialTag` since no generic "L" tag exists — the same convention `power_source_3p` already established), `terminal_strip` (4 straight-through terminal pairs, each an `always_closed` contact bridging a top/bottom pin — a terminal block has no switching function, it's just a splice point).
+- `src/components/symbols/library.ts` / `schema.ts` / `SymbolRenderer.tsx` — `lamp` gained `properties.color` (`LAMP_COLORS`/`resolveLampColor`, IEC red/green/yellow/blue/white, defaulting to red). Threaded through via a new `"signalColor"` sentinel value a path's `fill`/`stroke` can use in the symbol schema — deliberately kept independent of the existing `"statusColor"`/`currentColor` convention (which drives the amber energized/selected-blue outline), since a lamp's lens color is a user-chosen property, not a live simulation/selection state.
+- `src/components/symbols/contactState.ts` (new) — **bug found and fixed this phase**: `ComponentSymbol.tsx`'s inline mirror of the solver's contact-open/closed logic only special-cased `control: 'pressed'`, silently falling back to `coilEnergized` semantics for `'tripped'`/`'latched'`/`'timed'`. Since `thermal_overload_relay`, `emergency_stop`, and `timer_ton`'s timed contacts have no coil pins of their own, this meant their contacts would always have rendered "open" regardless of real state — invisible until real symbols existed to notice it on. Extracted into its own `isContactClosed()` (covers all 5 `ContactSegment.control` values) so it's unit-testable without pulling in `react-konva`, and wired `ComponentSymbol.tsx` to call it instead of the ad-hoc inline check.
+- `src/components/symbols/ComponentSymbol.tsx` — `motor_3p_6wire` now gets the same rotor animation `motor_3p` already had, plus a small Y/Δ wiring badge reflecting the solver's `motorWiring` state (`'star'`/`'delta'`/`'none'`) — closing the "ganging `motorWiring` into operate-mode visuals" item the Week 2 SOLV section had left as not-yet-built.
+- `tests/symbols/zoom-stress.test.ts` — pixel-snapping audit at 0.1×–10× zoom, arithmetic-only (matches this repo's existing no-canvas-rendering test style, consistent with how `tests/engine/` verifies geometry without a real DOM/canvas).
+- `docs/symbols/component-symbols.md` — full pin-layout reference for every registered symbol (now 17, was 8).
+- `tests/symbols/symbolRegistry.test.ts` — registry-parity coverage extended from 8 to all 17 symbol types.
+
+**Not yet built**: a real design pass on the placeholder artwork (still explicitly acceptable per the Week 1 note — pending time with Zuzo); any further Tier 2 symbols (out of Phase A scope per the confirmed scope boundary).
+
+**Verified working**: `npm run type-check`, `npm run lint`, `npm run test`, `npm run build` all clean in isolation on the feature branch; re-verified again post-integration (see the Week 2 wrap-up section below).
+
+---
+
+## Implementation Status (Phase A — Week 2, ROUTE: manual waypoint editing + arc-hop rendering + incremental geometry cache)
+
+Built on branch `phaseA/route-w2-waypoints`, on top of the Week 1/Week 2-SOLV/QA integration commit (`544121a`). **Merged to `main` 2026-07-24** alongside the rest of Phase A Week 2.
+
+**What's in place**:
+- `src/engine/wiring.ts` — `dragWireSegment(path, segmentIndex, delta)`: converts a drag on any rendered wire segment into an explicit `Wire.points` override, preserving both pin endpoints and the existing Manhattan orthogonality invariant (a drag on a pin-adjacent segment inserts a new jog point; a drag on an interior segment just shifts it in place). This is what populates the `Wire.points` field that's existed since Phase 2 but was never written by the live editor — and it's exactly what activates the previously-dormant T-junction detection in `findJunctions()` (a Phase 3 fix had deliberately restricted junctions to manually-routed host wires only, precisely so this feature could exist later without false positives from auto-routed elbows). Verified end-to-end with a test that feeds `dragWireSegment`'s real output into `findJunctions` rather than a hand-built points array.
+- `src/store/wires.ts` — new `setWirePoints(id, points)` command, following the exact same undoable-command pattern as the existing `setWireType` (Phase 2), so waypoint edits go through `src/store/history.ts` like every other mutation.
+- `src/components/Canvas/WireLayer.tsx` — draggable handles at each segment midpoint of the *selected* wire, axis-locked via Konva's `dragBoundFunc` so a drag can't accidentally jog the wire off its intended axis.
+- `src/engine/wiring.ts` — `findCrossings()`: detects wire-pair crossings that do **not** share an endpoint (bbox-culled broad phase, then general segment intersection), deliberately excluding near-endpoint intersections so this never overlaps with T-junction detection — those two mechanisms stay mutually exclusive by construction, not by coincidence. `WireLayer.tsx` renders a small semicircular "hop" on whichever wire is later in draw order at each detected crossing, so an incidental grid-alignment crossing reads as visually unconnected (this is the arc-hop polish Phase 2's CLAUDE.md notes had left as a placeholder).
+- `src/engine/wireGeometryCache.ts` (new) — incremental per-wire path memoization keyed on object identity: since `canvas.ts`'s `moveComponent` and `wires.ts`'s `setWirePoints` (and every other mutation) only ever replace the *one* changed component/wire object while every other component/wire keeps its exact prior reference, a cache keyed on those references can skip re-resolving `getWirePath()`/`findJunctions()`/`findCrossings()` for anything untouched, plus an `onlyInvolving`-restricted incremental recompute for junctions/crossings touching just the changed wire(s). An initial version of the `onlyInvolving` restriction only half-worked (still iterating the full O(wires²) pair space internally even when restricted) — caught by the perf test itself, not by inspection, and fixed by restructuring `findJunctions`/`findCrossings`' internal loop structure.
+- `src/types/circuit.ts` — additive-only `Crossing` interface (no changes to any existing type's shape).
+- Perf (`tests/engine/wiring-perf.test.ts`, measured in isolation via `npx vitest run`): full cold pass over 500 components / 955 wires in 6–11ms (budget: 16ms, per roadmap Section 10.3); incremental single-component-move pass in ~1–2ms (touching only 4 of 955 wires) — a 4–5× speedup over the cold-pass path. The CI assertion itself uses a looser ceiling than the numbers above to absorb Vitest's parallel-worker contention, matching the existing convention already used in `tests/engine/routing/perf.test.ts`.
+- Integration boundary: all new geometry work reads pin positions exclusively through the existing `getPinPosition()` API — never symbol-internal geometry — keeping it decoupled from SYM's concurrent Week 2 symbol work.
+
+**Not yet built**: wiring the dark `ASTAR_ROUTING_ENABLED` router into the live editor (still explicitly out of Phase A scope, per Week 1's notes); further junction/crossing UX polish beyond the basic hop rendering.
+
+**Verified working**: `npm run type-check`, `npm run lint`, `npm run build`, plus the perf benchmark numbers above, all clean in isolation on the feature branch; re-verified again post-integration (see the Week 2 wrap-up section below).
+
+---
+
+## Phase A Week 2 — Integration Complete (2026-07-24)
+
+SYM, CORE, and ROUTE's three sections above were built in parallel (each in its own git worktree, cut from `integration/phase-a-w2` at `544121a`) and merged in sequence — SYM → CORE → ROUTE — with **zero manual conflict resolution needed** at the git level, including in `src/store/wires.ts`, which both CORE (`loadWires()`) and ROUTE (`setWirePoints`) touched: git's structural merge combined the two non-overlapping additions cleanly.
+
+`integration/phase-a-w2` was then fast-forwarded into `main` and pushed to `origin` (`github.com/mrzuzo90/zcade`) — this is the first push of any Phase A work to the remote; everything through Week 1 had been local-only until this point.
+
+**Post-merge verification on `main`** (`af3dcb4`): `npm run type-check`, `npm run lint`, `npm run test` (**332/332 passing, 0 skipped** — the last intentionally-skipped test, persistence round-trip, went green with CORE's Week 2 work), `npm run build`, and `cargo check` in `src-tauri/` (required one `cargo clean` first — a stale build-cache artifact from an unrelated local project had left a broken absolute path baked into a Tauri plugin's build-script output directory; unrelated to any of this session's changes, and resolved by the clean).
+
+**A dispatch-mechanism gotcha discovered and worked around this session**: the harness's native `Agent` tool `isolation: "worktree"` option bases new worktrees on `origin/main` rather than the local repo's current branch. Since all of Phase A (Week 1 and Week 2) existed only as local commits before this session's push, every agent dispatched with that option landed on a worktree stuck at the pre-Phase-1 prototype commit. All three first-attempt agents correctly self-detected this via their mandatory first-step verification and aborted with zero wasted work — but the fix was to stop using that option for this repo and instead create worktrees manually (`git worktree add <path> -b <branch> integration/phase-a-w2`) before dispatching. Now that `main` and `integration/phase-a-w2` are pushed to `origin`, this may no longer reproduce — worth a quick sanity check (verify a freshly `isolation: "worktree"`-dispatched agent's `git log` matches expectations) before relying on the native option again.
+
+**Remaining Phase A scope** (per `COMPLETE_PROJECT_ROADMAP.md` Section 2): the **ERC role** has not started at all (rule framework + 5 baseline rules — floating net, open motor phase, unpowered coil, duplicate labels, L-L/L-N short consuming SOLV's `shortedNetIds`); the **i18n scaffold** (react-i18next, ES base) was explicitly deferred out of CORE's Week 2 dispatch and is still owed; the final **Gate G-A report** (QA, roadmap W2 D10: test matrix, coverage, perf numbers, open bugs) has not been produced. One open decision needs Zuzo's sign-off before more work builds on top of it: CORE's `.zcade` wire-reference shape (`{componentId, pinId}` objects vs. this doc's own illustrative `"comp_km1:1"` string format) — see the flag in the CORE section above.
 
 ---
 
