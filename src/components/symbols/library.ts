@@ -182,7 +182,7 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     label: 'F',
     category: 'electrical',
     width: 60,
-    height: 40,
+    height: 60,
     pins: [
       { id: '1', offset: { x: 0, y: 10 }, kind: 'power' },
       { id: '2', offset: { x: 60, y: 10 }, kind: 'power' },
@@ -192,12 +192,18 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: '6', offset: { x: 60, y: 30 }, kind: 'power' },
       { id: '95', offset: { x: 0, y: 40 }, kind: 'auxiliary_nc' },
       { id: '96', offset: { x: 60, y: 40 }, kind: 'auxiliary_nc' },
+      // Fault-signal contact (docs/component-catalog.md §3): NO, closes on
+      // trip to drive a fault lamp — independent of 95-96's NC seal-in-break
+      // role. Same `tripped` control state, opposite polarity.
+      { id: '97', offset: { x: 0, y: 50 }, kind: 'auxiliary_no' },
+      { id: '98', offset: { x: 60, y: 50 }, kind: 'auxiliary_no' },
     ],
     contacts: [
       { pins: ['1', '2'], behavior: 'always_closed' },
       { pins: ['3', '4'], behavior: 'always_closed' },
       { pins: ['5', '6'], behavior: 'always_closed' },
       { pins: ['95', '96'], behavior: 'nc', control: 'tripped' },
+      { pins: ['97', '98'], behavior: 'no', control: 'tripped' },
     ],
   },
 
