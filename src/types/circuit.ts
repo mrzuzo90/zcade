@@ -157,6 +157,33 @@ export interface Crossing {
   wireIds: [string, string]
 }
 
+/**
+ * A group of wires whose routed paths share a fully-overlapping collinear
+ * segment (not just a crossing point) — e.g. several wires leaving
+ * terminals aligned in the same row/column. Purely a rendering concern (see
+ * engine/wiring.ts findOverlaps / pathWithLaneOffsets): each wire in the
+ * group is nudged into its own parallel "lane" so all of them stay visible
+ * instead of rendering on top of one another.
+ */
+export interface Overlap {
+  axis: 'h' | 'v'
+  /** The shared coordinate: y for a horizontal corridor, x for a vertical one. */
+  fixed: number
+  /**
+   * Covering range (union) along the moving axis (x for horizontal, y for
+   * vertical) of every wire segment in this connected cluster — NOT
+   * necessarily where all member wires are simultaneously present (a chain
+   * like A:[0,50]/B:[30,80]/C:[60,100] has no single sub-range shared by
+   * all three, but is still one connected overlap group). This is safe to
+   * use as-is when applying a per-wire offset: `pathWithLaneOffsets` always
+   * intersects it with that wire's own actual segment bounds, so a wire
+   * never gets shifted outside where it truly exists.
+   */
+  start: number
+  end: number
+  wireIds: string[]
+}
+
 /** A net is a set of pins held at the same potential, transitively joined by wires and junctions. */
 export interface NodeNet {
   id: string

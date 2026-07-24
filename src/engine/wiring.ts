@@ -1,4 +1,4 @@
-import type { ComponentInstance, Crossing, Point, Rotation, Wire, WireType, Junction } from '@/types/circuit'
+import type { ComponentInstance, Crossing, Junction, Overlap, Point, Rotation, Wire, WireType } from '@/types/circuit'
 import { getComponentDefinition } from '@/components/symbols/library'
 
 /** IEC 60617-standard colors, per the wire palette documented in CLAUDE.md. */
@@ -374,6 +374,98 @@ export function findCrossings(
   }
 
   return crossings
+}
+
+interface LineEntry {
+  wireId: string
+  start: number
+  end: number
+}
+
+/** `h:<y>` for a horizontal segment, `v:<x>` for vertical — null if the segment isn't axis-aligned (shouldn't happen for orthogonal routes, but guarded rather than assumed). */
+function lineKey(a: Point, b: Point): string | null {
+  if (Math.abs(a.y - b.y) <= EPSILON) return `h:${a.y}`
+  if (Math.abs(a.x - b.x) <= EPSILON) return `v:${a.x}`
+  return null
+}
+
+/**
+ * Finds groups of wires whose routed paths share a fully-overlapping
+ * collinear segment (same infinite line, overlapping ranges) — the case
+ * `segmentIntersection` above deliberately excludes (parallel/collinear
+ * pairs return null there, since that function only detects perpendicular
+ * crossings). Purely a rendering concern, consumed by `pathWithLaneOffsets`
+ * to fan overlapping wires into distinct parallel lanes so none of them
+ * render fully hidden behind another.
+ *
+ * Groups are found via a standard "merge overlapping intervals" sweep per
+ * canonical line: entries are sorted by their start coordinate, and any
+ * entry whose start falls before the running cluster's end is folded into
+ * that cluster (this is the same algorithm used to find connected
+ * components of an interval-overlap graph, so a chain of 3+ wires with
+ * staggered-but-connected ranges is grouped correctly, not just exact pairs).
+ * Two clusters on the exact same infinite line that don't actually overlap
+ * (e.g. a busbar row far to the left, and an unrelated pair of terminals far
+ * to the right, both at the same y) are correctly kept as separate groups.
+ *
+ * `onlyInvolving` has the same incremental-recompute meaning as on
+ * `findJunctions`/`findCrossings`.
+ */
+export function findOverlaps(
+  wires: Wire[],
+  components: Record<string, ComponentInstance>,
+  onlyInvolving?: Set<string>,
+): Overlap[] {
+  const byLine = new Map<string, LineEntry[]>()
+
+  for (const wire of wires) {
+    const path = getWirePath(wire, components)
+    if (!path) continue
+    for (let i = 0; i < path.length - 1; i++) {
+      const a = path[i]
+      const b = path[i + 1]
+      const key = lineKey(a, b)
+      if (!key) continue
+      const horizontal = key.startsWith('h:')
+      const start = horizontal ? Math.min(a.x, b.x) : Math.min(a.y, b.y)
+      const end = horizontal ? Math.max(a.x, b.x) : Math.max(a.y, b.y)
+      const entry: LineEntry = { wireId: wire.id, start, end }
+      const list = byLine.get(key)
+      if (list) list.push(entry)
+      else byLine.set(key, [entry])
+    }
+  }
+
+  const overlaps: Overlap[] = []
+
+  for (const [key, entries] of byLine) {
+    const horizontal = key.startsWith('h:')
+    const fixed = Number(key.slice(2))
+    const sorted = [...entries].sort((a, b) => a.start - b.start)
+
+    let i = 0
+    while (i < sorted.length) {
+      let clusterEnd = sorted[i].end
+      const clusterIdx = [i]
+      let j = i + 1
+      while (j < sorted.length && sorted[j].start < clusterEnd - EPSILON) {
+        clusterEnd = Math.max(clusterEnd, sorted[j].end)
+        clusterIdx.push(j)
+        j++
+      }
+
+      const clusterEntries = clusterIdx.map((idx) => sorted[idx])
+      const wireIds = [...new Set(clusterEntries.map((e) => e.wireId))]
+      const clusterStart = Math.min(...clusterEntries.map((e) => e.start))
+
+      if (wireIds.length >= 2 && (!onlyInvolving || wireIds.some((id) => onlyInvolving.has(id)))) {
+        overlaps.push({ axis: horizontal ? 'h' : 'v', fixed, start: clusterStart, end: clusterEnd, wireIds })
+      }
+      i = j
+    }
+  }
+
+  return overlaps
 }
 
 const HOP_SAMPLES = 8

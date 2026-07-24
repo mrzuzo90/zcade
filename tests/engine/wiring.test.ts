@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { ComponentInstance } from '@/types/circuit'
+import type { ComponentInstance, Overlap } from '@/types/circuit'
 import {
   dragWireSegment,
   findCrossings,
   findJunctions,
+  findOverlaps,
   getPinPosition,
   getWirePath,
   pathWithHops,
@@ -298,5 +299,98 @@ describe('findCrossings / pathWithHops', () => {
     const path = [{ x: 0, y: 50 }, { x: 4, y: 50 }, { x: 100, y: 50 }]
     const hopped = pathWithHops(path, [{ x: 2, y: 50 }], 6)
     expect(hopped).toEqual(path)
+  })
+})
+
+describe('findOverlaps', () => {
+  it('detects two wires sharing a fully-overlapping horizontal segment', () => {
+    // a.1 (15,0) -> b.1 (115,0): horizontal at y=0. c.1 (15,0) -> d.1 (115,0): same line, same range.
+    const components: Record<string, ComponentInstance> = {
+      a: instance({ id: 'a', type: 'lamp', x: 0, y: 0 }),
+      b: instance({ id: 'b', type: 'lamp', x: 100, y: 0 }),
+      c: instance({ id: 'c', type: 'lamp', x: 0, y: 0 }),
+      d: instance({ id: 'd', type: 'lamp', x: 100, y: 0 }),
+    }
+    const w1 = { id: 'w1', from: { componentId: 'a', pinId: '1' }, to: { componentId: 'b', pinId: '1' } }
+    const w2 = { id: 'w2', from: { componentId: 'c', pinId: '1' }, to: { componentId: 'd', pinId: '1' } }
+    const overlaps: Overlap[] = findOverlaps([w1, w2], components)
+    expect(overlaps).toHaveLength(1)
+    expect(overlaps[0]).toMatchObject({ axis: 'h', fixed: 0, start: 15, end: 115 })
+    expect(overlaps[0].wireIds.slice().sort()).toEqual(['w1', 'w2'])
+  })
+
+  it('detects a partial overlap and reports the covering range of the whole cluster', () => {
+    const components: Record<string, ComponentInstance> = {
+      a: instance({ id: 'a', type: 'lamp', x: 0, y: 0 }), // pin '1' -> (15, 0)
+      b: instance({ id: 'b', type: 'lamp', x: 100, y: 0 }), // pin '1' -> (115, 0)
+      c: instance({ id: 'c', type: 'lamp', x: 50, y: 0 }), // pin '1' -> (65, 0)
+      d: instance({ id: 'd', type: 'lamp', x: 200, y: 0 }), // pin '1' -> (215, 0)
+    }
+    const w1 = { id: 'w1', from: { componentId: 'a', pinId: '1' }, to: { componentId: 'b', pinId: '1' } } // 15..115
+    const w2 = { id: 'w2', from: { componentId: 'c', pinId: '1' }, to: { componentId: 'd', pinId: '1' } } // 65..215
+    // w1 and w2's own ranges only truly overlap on [65,115], but the reported
+    // range is the union across the connected cluster (15..215) — see the
+    // `Overlap.start`/`end` doc comment for why. `pathWithLaneOffsets` still
+    // only ever shifts each wire within its own actual segment bounds.
+    const overlaps = findOverlaps([w1, w2], components)
+    expect(overlaps).toHaveLength(1)
+    expect(overlaps[0]).toMatchObject({ axis: 'h', fixed: 0, start: 15, end: 215 })
+  })
+
+  it('does not report wires on the same line whose ranges do not overlap', () => {
+    const components: Record<string, ComponentInstance> = {
+      a: instance({ id: 'a', type: 'lamp', x: 0, y: 0 }), // (15,0)
+      b: instance({ id: 'b', type: 'lamp', x: 10, y: 0 }), // (25,0)
+      c: instance({ id: 'c', type: 'lamp', x: 500, y: 0 }), // (515,0)
+      d: instance({ id: 'd', type: 'lamp', x: 510, y: 0 }), // (525,0)
+    }
+    const w1 = { id: 'w1', from: { componentId: 'a', pinId: '1' }, to: { componentId: 'b', pinId: '1' } }
+    const w2 = { id: 'w2', from: { componentId: 'c', pinId: '1' }, to: { componentId: 'd', pinId: '1' } }
+    expect(findOverlaps([w1, w2], components)).toHaveLength(0)
+  })
+
+  it('does not report a single wire overlapping only itself', () => {
+    const components: Record<string, ComponentInstance> = {
+      a: instance({ id: 'a', type: 'lamp', x: 0, y: 0 }),
+      b: instance({ id: 'b', type: 'lamp', x: 100, y: 0 }),
+    }
+    const w1 = { id: 'w1', from: { componentId: 'a', pinId: '1' }, to: { componentId: 'b', pinId: '1' } }
+    expect(findOverlaps([w1], components)).toHaveLength(0)
+  })
+
+  it('does not report perpendicular crossings (that is findCrossings job, not this one)', () => {
+    const components: Record<string, ComponentInstance> = {
+      e1: instance({ id: 'e1', type: 'lamp', x: -15, y: 35 }),
+      e2: instance({ id: 'e2', type: 'lamp', x: 85, y: 35 }),
+      f1: instance({ id: 'f1', type: 'lamp', x: 35, y: -15 }),
+      f2: instance({ id: 'f2', type: 'lamp', x: 35, y: 85 }),
+    }
+    const horizontal = { id: 'h', from: { componentId: 'e1', pinId: '1' }, to: { componentId: 'e2', pinId: '1' } }
+    const vertical = { id: 'v', from: { componentId: 'f1', pinId: '1' }, to: { componentId: 'f2', pinId: '1' } }
+    expect(findOverlaps([horizontal, vertical], components)).toHaveLength(0)
+  })
+
+  it('onlyInvolving restricts results to groups touching one of the given wire ids', () => {
+    const components: Record<string, ComponentInstance> = {
+      a: instance({ id: 'a', type: 'lamp', x: 0, y: 0 }),
+      b: instance({ id: 'b', type: 'lamp', x: 100, y: 0 }),
+      c: instance({ id: 'c', type: 'lamp', x: 0, y: 0 }),
+      d: instance({ id: 'd', type: 'lamp', x: 100, y: 0 }),
+      e: instance({ id: 'e', type: 'lamp', x: 0, y: 200 }),
+      f: instance({ id: 'f', type: 'lamp', x: 100, y: 200 }),
+      g: instance({ id: 'g', type: 'lamp', x: 0, y: 200 }),
+      h: instance({ id: 'h', type: 'lamp', x: 100, y: 200 }),
+    }
+    const w1 = { id: 'w1', from: { componentId: 'a', pinId: '1' }, to: { componentId: 'b', pinId: '1' } }
+    const w2 = { id: 'w2', from: { componentId: 'c', pinId: '1' }, to: { componentId: 'd', pinId: '1' } }
+    const w3 = { id: 'w3', from: { componentId: 'e', pinId: '1' }, to: { componentId: 'f', pinId: '1' } }
+    const w4 = { id: 'w4', from: { componentId: 'g', pinId: '1' }, to: { componentId: 'h', pinId: '1' } }
+
+    const all = findOverlaps([w1, w2, w3, w4], components)
+    expect(all).toHaveLength(2)
+
+    const restricted = findOverlaps([w1, w2, w3, w4], components, new Set(['w1']))
+    expect(restricted).toHaveLength(1)
+    expect(restricted[0].wireIds.slice().sort()).toEqual(['w1', 'w2'])
   })
 })
