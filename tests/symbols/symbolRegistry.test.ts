@@ -51,6 +51,14 @@ const ALL_TYPES = [
   'bt_linea_trifasica_fnt',
   'bt_linea_cc',
   'bt_linea_cc_tierra',
+  // Unifilar — fuentes + máquinas
+  'bt_generador_ca',
+  'bt_bateria_almacenamiento',
+  'bt_modulos_fotovoltaicos',
+  'bt_bateria_condensadores',
+  'bt_transformador',
+  'bt_inversor',
+  'bt_regulador_cc',
 ]
 
 describe('symbolRegistry', () => {

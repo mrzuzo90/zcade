@@ -685,6 +685,84 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     ],
     contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
   },
+
+  // -- Fuentes (single-terminal sources, archetype A) ----------------------
+  // One pin carrying a fixed `potential` (the solver injects it as a source),
+  // same pattern as power_source_3p/_dc. No contacts.
+  bt_generador_ca: {
+    type: 'bt_generador_ca',
+    label: 'G',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [{ id: 'L', offset: { x: 20, y: 0 }, kind: 'power', potential: 'L1' }],
+  },
+  bt_bateria_almacenamiento: {
+    type: 'bt_bateria_almacenamiento',
+    label: 'G',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [{ id: '+', offset: { x: 20, y: 0 }, kind: 'power', potential: 'DC_POS' }],
+  },
+  bt_modulos_fotovoltaicos: {
+    type: 'bt_modulos_fotovoltaicos',
+    label: 'G',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [{ id: '+', offset: { x: 20, y: 0 }, kind: 'power', potential: 'DC_POS' }],
+  },
+
+  // -- Máquinas (isolated blocks, archetype B / passthrough C) -------------
+  // Isolated types (B) declare IN/OUT but NO bridging contact — a transformer/
+  // capacitor bank/inverter is galvanically separated or shunt-connected, not
+  // a series conductor. bt_regulador_cc is a series passthrough (C).
+  bt_bateria_condensadores: {
+    type: 'bt_bateria_condensadores',
+    label: 'C',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+  },
+  bt_transformador: {
+    type: 'bt_transformador',
+    label: 'T',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+  },
+  bt_inversor: {
+    type: 'bt_inversor',
+    label: 'G',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+  },
+  bt_regulador_cc: {
+    type: 'bt_regulador_cc',
+    label: 'G',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
 }
 
 export function getComponentDefinition(type: string): ComponentDefinition {
