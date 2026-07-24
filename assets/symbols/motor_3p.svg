@@ -1,16 +1,17 @@
 <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
   <!--
-    3-phase motor. Circle body (drawn as two arcs — the path-only-primitives
-    rule) + 3 terminal stubs down to U/V/W. The animated rotor line is drawn
-    separately in ComponentSymbol.tsx as a plain Konva shape (see CLAUDE.md
-    Phase 3 notes: it's rAF-driven cosmetic state, not simulation truth, so
-    it deliberately stays outside the static symbol asset).
+    3-phase motor — unifilar (single-line) style per the ADG sheet: circle
+    body with an "M" glyph (drawn as paths, not <text> — the path-only rule).
+    3 terminal stubs kept to the existing U/V/W pins so the multi-line wire
+    endpoints are unchanged (art-only swap, spec Decision #3). The animated
+    rotor line stays in ComponentSymbol.tsx (rAF-driven cosmetic state).
   -->
   <g id="layer:base">
     <path d="M15,0 L15,8" stroke="currentColor" stroke-width="1.5"/>
     <path d="M30,0 L30,8" stroke="currentColor" stroke-width="1.5"/>
     <path d="M45,0 L45,8" stroke="currentColor" stroke-width="1.5"/>
     <path d="M30,6 A26,26 0 1,0 30,58 A26,26 0 1,0 30,6 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M20,42 L20,24 L30,36 L40,24 L40,42" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
   </g>
   <g id="layer:energized">
     <path d="M30,6 A26,26 0 1,0 30,58 A26,26 0 1,0 30,6 Z" fill="#f59e0b" opacity="0.15"/>
