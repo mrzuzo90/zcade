@@ -1,0 +1,12 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- bt_enchufe: socket outlet — half-circle receptacle on the feeder. -->
+  <g id="layer:base">
+    <path d="M20,0 L20,20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M8,20 A12,12 0 0,0 32,20 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M20,32 L20,40" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="IN" data-pin-kind="power" cx="20" cy="0" r="1"/>
+    <circle data-pin-id="OUT" data-pin-kind="power" cx="20" cy="40" r="1"/>
+  </g>
+</svg>

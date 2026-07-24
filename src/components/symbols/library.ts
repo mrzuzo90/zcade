@@ -838,6 +838,89 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
     ],
   },
+
+  // -- Baja tensión --------------------------------------------------------
+  // Earth (A, single PE terminal), lighting (D, 2 signal pins → solver `lit`),
+  // and passthrough BT gear/boxes (C).
+  bt_puesta_a_tierra: {
+    type: 'bt_puesta_a_tierra',
+    label: 'PE',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [{ id: 'PE', offset: { x: 20, y: 0 }, kind: 'power', potential: 'PE' }],
+  },
+  bt_iluminacion: {
+    type: 'bt_iluminacion',
+    label: 'H',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: '1', offset: { x: 20, y: 0 }, kind: 'signal', suggestedWireType: 'L1' },
+      { id: '2', offset: { x: 20, y: 40 }, kind: 'signal', suggestedWireType: 'N' },
+    ],
+  },
+  bt_enchufe: {
+    type: 'bt_enchufe',
+    label: 'X',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_resistencia: {
+    type: 'bt_resistencia',
+    label: 'R',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_cuadro_de_protecciones: {
+    type: 'bt_cuadro_de_protecciones',
+    label: 'X',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_caja_seccionamiento: {
+    type: 'bt_caja_seccionamiento',
+    label: 'X',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_caja_general_proteccion: {
+    type: 'bt_caja_general_proteccion',
+    label: 'X',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
 }
 
 export function getComponentDefinition(type: string): ComponentDefinition {

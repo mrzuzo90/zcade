@@ -66,6 +66,14 @@ const ALL_TYPES = [
   'bt_vatimetro_indirecto',
   'bt_indicador',
   'bt_sumador_intensidades',
+  // Unifilar — baja tensión
+  'bt_puesta_a_tierra',
+  'bt_iluminacion',
+  'bt_enchufe',
+  'bt_resistencia',
+  'bt_cuadro_de_protecciones',
+  'bt_caja_seccionamiento',
+  'bt_caja_general_proteccion',
 ]
 
 describe('symbolRegistry', () => {
