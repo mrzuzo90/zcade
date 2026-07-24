@@ -103,6 +103,16 @@ so it never renders; `r` is ignored. `tests/symbols/symbolRegistry.test.ts`
 asserts this list matches `library.ts` byte-for-byte for every migrated
 type — if you add/rename a pin in one place, update the other or CI fails.
 
+A pin that represents a load or coil's fixed phase/neutral side (never a
+pure switch/contact pin, which has no fixed side of its own) may also carry
+`data-pin-suggested-wire-type="<WireType>"` — parsed into
+`PinDefinition.suggestedWireType`. This is UI-only: it lets
+`store/wires.ts`'s `completeWire` auto-color a new wire on connection (e.g.
+a lamp's neutral pin auto-assigns blue), and is never read by
+`engine/solver.ts`. Do not confuse this with `data-pin-potential`
+(`PinDefinition.potential`), which the solver treats as a real source of
+that tag — only use `potential` on an actual power-source pin.
+
 ## 7. Wiring up `stateLayers` explicitly (optional but recommended once you have contacts)
 
 Without any metadata, the parser assumes `base` is your base layer and

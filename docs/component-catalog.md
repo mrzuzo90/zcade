@@ -118,7 +118,7 @@ Dispositivos accionados manualmente por el operador.
 El "cerebro" de la lógica cableada tradicional.
 
 * **Bobina de Contactor / Relé Auxiliar (Estándar)**:
-  * *Bornes:* A1 - A2.
+  * *Bornes:* A1 - A2. Convención: A1 = lado de fase (alimentado a través de los contactos de mando), A2 = lado de neutro (unido al riel de neutro). Todas las bobinas se modelan hoy como AC; una variante DC (+24V/0V) tendría su propia convención de bornes.
   * Al energizarse con la tensión adecuada, conmuta todos los contactos que compartan su misma etiqueta (ej. `KM1`, `KA1`).
 * **Bobina de Temporizador a la Conexión (TON - On Delay)**:
   * *Bornes:* A1 - A2.
