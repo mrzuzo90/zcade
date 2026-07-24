@@ -1,0 +1,24 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- ANSI 59N residual-overvoltage relay: sensing circle + ANSI code (59N) + series trip contact. -->
+  <g id="layer:base">
+    <path d="M20,0 L20,4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M20,4 A8,8 0 1,0 20,20 A8,8 0 1,0 20,4 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M12,8 L15,8 M12,8 L12,11 M12,11 L15,11 M15,11 L15,14 M12,14 L15,14 M16,8 L19,8 M19,8 L19,11 M19,11 L19,14 M16,14 L19,14 M16,14 L16,11 M16,11 L19,11 M21,14 L21,8 M21,8 L24,14 M24,14 L24,8" stroke="currentColor" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+    <path d="M20,20 L20,24" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M16,24 L24,24 M16,34 L24,34" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M20,34 L20,40" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-IN-OUT-open">
+    <path d="M20,24 L27,33" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-IN-OUT-closed">
+    <path d="M20,24 L20,34" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="IN" data-pin-kind="power" cx="20" cy="0" r="1"/>
+    <circle data-pin-id="OUT" data-pin-kind="power" cx="20" cy="40" r="1"/>
+  </g>
+  <metadata id="stateLayers">
+    { "base": "base", "contacts": { "IN-OUT": { "open": "contact-IN-OUT-open", "closed": "contact-IN-OUT-closed" } } }
+  </metadata>
+</svg>

@@ -1,0 +1,24 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- ANSI 87 differential relay: sensing circle + ANSI code + series trip contact. -->
+  <g id="layer:base">
+    <path d="M20,0 L20,4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M20,4 A8,8 0 1,0 20,20 A8,8 0 1,0 20,4 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M13,8 L17,8 M17,8 L17,11 M17,11 L17,14 M13,14 L17,14 M13,11 L13,14 M13,8 L13,11 M13,11 L17,11 M19,8 L23,8 M23,8 L23,11 M23,11 L23,14" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M20,20 L20,24" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M16,24 L24,24 M16,34 L24,34" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M20,34 L20,40" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-IN-OUT-open">
+    <path d="M20,24 L27,33" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="layer:contact-IN-OUT-closed">
+    <path d="M20,24 L20,34" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="IN" data-pin-kind="power" cx="20" cy="0" r="1"/>
+    <circle data-pin-id="OUT" data-pin-kind="power" cx="20" cy="40" r="1"/>
+  </g>
+  <metadata id="stateLayers">
+    { "base": "base", "contacts": { "IN-OUT": { "open": "contact-IN-OUT-open", "closed": "contact-IN-OUT-closed" } } }
+  </metadata>
+</svg>

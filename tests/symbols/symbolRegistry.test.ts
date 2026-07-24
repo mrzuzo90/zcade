@@ -2,40 +2,51 @@ import { describe, expect, it } from 'vitest'
 import { getSymbolDefinition, listSymbolTypes } from '@/components/symbols/symbolRegistry'
 import { COMPONENT_LIBRARY } from '@/components/symbols/library'
 
-const MIGRATED_TYPES = [
+/**
+ * The full registered symbol set. Week 1/Week 2's MIGRATED_TYPES/WEEK2_TYPES
+ * split was collapsed into this single authoritative list during the unifilar
+ * symbol integration (2026-07-25), which appends the 52 single-line symbols
+ * category by category below.
+ */
+const ALL_TYPES = [
+  // Tier 1 (Week 1) + Week 2 SYM/SOLV set
   'power_source_3p',
   'power_source_dc',
+  'power_source_1p',
   'circuit_breaker_3p',
   'contactor_3p',
+  'contactor_4p',
   'push_button_no',
   'push_button_nc',
   'motor_3p',
+  'motor_3p_6wire',
   'lamp',
-]
-
-/**
- * Phase A Week 2 (SYM) additions: real art for the 6 SOLV-frozen placeholder
- * types (Part 1) plus 3 new trivial library.ts entries (Part 2). Kept as a
- * separate list from `MIGRATED_TYPES` above so the Week 1 count assertion
- * stays a precise historical record; `ALL_TYPES` below is what every other
- * parity check in this file actually iterates.
- */
-const WEEK2_TYPES = [
   'emergency_stop',
   'aux_contact_block_no',
   'aux_contact_block_nc',
   'thermal_overload_relay',
   'timer_ton',
-  'motor_3p_6wire',
-  'contactor_4p',
-  'power_source_1p',
   'terminal_strip',
+  // Unifilar — protecciones
+  'bt_seccionador',
+  'bt_interruptor_seccionador',
+  'bt_fusible',
+  'bt_fusible_seccionable',
+  'bt_interruptor_diferencial',
+  'bt_interruptor_automatico_rele',
+  'bt_interruptor_temporizador',
+  'bt_protector_sobretensiones',
+  'protecciones_rele_27_tension_minima',
+  'protecciones_rele_57_cortocircuito',
+  'protecciones_rele_59_tension_maxima',
+  'protecciones_rele_59n_tension_maxima_homopolar',
+  'protecciones_rele_64_fallo_tierra',
+  'protecciones_rele_81_frecuencia',
+  'protecciones_rele_87_diferencial',
 ]
 
-const ALL_TYPES = [...MIGRATED_TYPES, ...WEEK2_TYPES]
-
 describe('symbolRegistry', () => {
-  it('registers exactly the 8 Tier 1 + 9 Week 2 symbols authored so far', () => {
+  it('registers exactly the authored symbol set (library ↔ SVG parity)', () => {
     expect(listSymbolTypes().sort()).toEqual([...ALL_TYPES].sort())
   })
 

@@ -398,6 +398,203 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { pins: ['4', '4B'], behavior: 'always_closed' },
     ],
   },
+
+  // ---------------------------------------------------------------------
+  // Unifilar (single-line) symbols — extracted from the ADG symbol sheet
+  // (see assets/symbols/unifilares/index.json) and integrated per
+  // docs/superpowers/plans/2026-07-25-unifilar-symbol-integration.md.
+  // Single-line archetypes: a component sits inline on a feeder, so the
+  // default is a vertical 2-pin pass-through (IN top-center / OUT
+  // bottom-center). `category` stays 'electrical' (the closed union in
+  // types/circuit.ts is untouched); palette grouping lives in categories.ts.
+  // ---------------------------------------------------------------------
+
+  // -- Protecciones --------------------------------------------------------
+  bt_seccionador: {
+    type: 'bt_seccionador',
+    label: 'Q',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_interruptor_seccionador: {
+    type: 'bt_interruptor_seccionador',
+    label: 'Q',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_fusible: {
+    type: 'bt_fusible',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_fusible_seccionable: {
+    type: 'bt_fusible_seccionable',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_interruptor_diferencial: {
+    type: 'bt_interruptor_diferencial',
+    label: 'Q',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_interruptor_automatico_rele: {
+    type: 'bt_interruptor_automatico_rele',
+    label: 'Q',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_interruptor_temporizador: {
+    type: 'bt_interruptor_temporizador',
+    label: 'Q',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  // Surge protective device: isolated (archetype B) — IN/OUT declared but NO
+  // bridging contact, since an SPD shunts transients to earth rather than
+  // conducting the feeder in series.
+  bt_protector_sobretensiones: {
+    type: 'bt_protector_sobretensiones',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+  },
+  // ANSI protection relays: placeholder trip contact (behavior 'no',
+  // control 'tripped', never asserted for now — no voltage/current magnitude
+  // modeling exists yet, matching the Phase 3 scope decision in engine/solver.ts).
+  protecciones_rele_27_tension_minima: {
+    type: 'protecciones_rele_27_tension_minima',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'no', control: 'tripped' }],
+  },
+  protecciones_rele_57_cortocircuito: {
+    type: 'protecciones_rele_57_cortocircuito',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'no', control: 'tripped' }],
+  },
+  protecciones_rele_59_tension_maxima: {
+    type: 'protecciones_rele_59_tension_maxima',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'no', control: 'tripped' }],
+  },
+  protecciones_rele_59n_tension_maxima_homopolar: {
+    type: 'protecciones_rele_59n_tension_maxima_homopolar',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'no', control: 'tripped' }],
+  },
+  protecciones_rele_64_fallo_tierra: {
+    type: 'protecciones_rele_64_fallo_tierra',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'no', control: 'tripped' }],
+  },
+  protecciones_rele_81_frecuencia: {
+    type: 'protecciones_rele_81_frecuencia',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'no', control: 'tripped' }],
+  },
+  protecciones_rele_87_diferencial: {
+    type: 'protecciones_rele_87_diferencial',
+    label: 'F',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'no', control: 'tripped' }],
+  },
 }
 
 export function getComponentDefinition(type: string): ComponentDefinition {
