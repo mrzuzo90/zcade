@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useWireStore } from '@/store/wires'
+import { useCanvasStore } from '@/store/canvas'
 
 function resetStore() {
   useWireStore.setState({ wires: {}, order: [], selectedWireId: null, pendingFrom: null })
@@ -68,5 +69,60 @@ describe('wire store', () => {
     const id = useWireStore.getState().completeWire({ componentId: 'b', pinId: '1' })!
     useWireStore.getState().setWireType(id, 'L1')
     expect(useWireStore.getState().wires[id].wireType).toBe('L1')
+  })
+})
+
+describe('wire store — suggestedWireType auto-assignment', () => {
+  beforeEach(() => {
+    resetStore()
+    useCanvasStore.setState({ components: {}, order: [], selectedId: null })
+  })
+
+  it('auto-assigns wireType when only one endpoint declares a hint', () => {
+    const lampId = useCanvasStore.getState().addComponent('lamp', 0, 0)
+    const buttonId = useCanvasStore.getState().addComponent('push_button_no', 100, 0)
+
+    useWireStore.getState().startWire({ componentId: lampId, pinId: '2' }) // suggestedWireType 'N'
+    const id = useWireStore.getState().completeWire({ componentId: buttonId, pinId: '13' })! // no hint
+    expect(useWireStore.getState().wires[id].wireType).toBe('N')
+  })
+
+  it('auto-assigns wireType when both endpoints agree', () => {
+    const lampId = useCanvasStore.getState().addComponent('lamp', 0, 0)
+    const contactorId = useCanvasStore.getState().addComponent('contactor_3p', 100, 0)
+
+    useWireStore.getState().startWire({ componentId: lampId, pinId: '2' }) // 'N'
+    const id = useWireStore.getState().completeWire({ componentId: contactorId, pinId: 'A2' })! // 'N'
+    expect(useWireStore.getState().wires[id].wireType).toBe('N')
+  })
+
+  it('does not auto-assign when both endpoints disagree', () => {
+    const lampId = useCanvasStore.getState().addComponent('lamp', 0, 0)
+    const contactorId = useCanvasStore.getState().addComponent('contactor_3p', 100, 0)
+
+    useWireStore.getState().startWire({ componentId: lampId, pinId: '1' }) // 'L1'
+    const id = useWireStore.getState().completeWire({ componentId: contactorId, pinId: 'A2' })! // 'N'
+    expect(useWireStore.getState().wires[id].wireType).toBeUndefined()
+  })
+
+  it('does not auto-assign when neither endpoint declares a hint', () => {
+    const aId = useCanvasStore.getState().addComponent('push_button_no', 0, 0)
+    const bId = useCanvasStore.getState().addComponent('push_button_no', 100, 0)
+
+    useWireStore.getState().startWire({ componentId: aId, pinId: '13' })
+    const id = useWireStore.getState().completeWire({ componentId: bId, pinId: '13' })!
+    expect(useWireStore.getState().wires[id].wireType).toBeUndefined()
+  })
+
+  it('manual setWireType still overrides an auto-assigned value', () => {
+    const lampId = useCanvasStore.getState().addComponent('lamp', 0, 0)
+    const buttonId = useCanvasStore.getState().addComponent('push_button_no', 100, 0)
+
+    useWireStore.getState().startWire({ componentId: lampId, pinId: '2' })
+    const id = useWireStore.getState().completeWire({ componentId: buttonId, pinId: '13' })!
+    expect(useWireStore.getState().wires[id].wireType).toBe('N')
+
+    useWireStore.getState().setWireType(id, 'PE')
+    expect(useWireStore.getState().wires[id].wireType).toBe('PE')
   })
 })

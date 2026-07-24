@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import type { Point, Wire, WireEndpoint, WireType } from '@/types/circuit'
 import { useHistoryStore, type Command } from '@/store/history'
+import { useCanvasStore } from '@/store/canvas'
+import { getComponentDefinition } from '@/components/symbols/library'
 
 let nextWireId = 1
 function generateWireId() {
@@ -16,6 +18,13 @@ function samePinPair(wire: Wire, from: WireEndpoint, to: WireEndpoint) {
     (sameEndpoint(wire.from, from) && sameEndpoint(wire.to, to)) ||
     (sameEndpoint(wire.from, to) && sameEndpoint(wire.to, from))
   )
+}
+
+function suggestedWireTypeFor(endpoint: WireEndpoint): WireType | undefined {
+  const instance = useCanvasStore.getState().components[endpoint.componentId]
+  if (!instance) return undefined
+  const def = getComponentDefinition(instance.type)
+  return def.pins.find((p) => p.id === endpoint.pinId)?.suggestedWireType
 }
 
 interface WireStore {
@@ -233,7 +242,10 @@ export const useWireStore = create<WireStore>((set, get) => {
       }
 
       const id = generateWireId()
-      const wire: Wire = { id, from: pendingFrom, to: endpoint }
+      const fromHint = suggestedWireTypeFor(pendingFrom)
+      const toHint = suggestedWireTypeFor(endpoint)
+      const wireType = fromHint && toHint ? (fromHint === toHint ? fromHint : undefined) : (fromHint ?? toHint)
+      const wire: Wire = wireType ? { id, from: pendingFrom, to: endpoint, wireType } : { id, from: pendingFrom, to: endpoint }
       // Clearing the in-progress draw gesture is transient UI state, not
       // undoable content — see file header comment.
       set({ pendingFrom: null })
