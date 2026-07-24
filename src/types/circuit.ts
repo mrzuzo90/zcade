@@ -29,6 +29,18 @@ export interface PinDefinition {
   linkedTo?: string
   /** Set only on power-source pins: the fixed potential this pin always carries (see engine/solver.ts). */
   potential?: PotentialTag
+  /**
+   * UI-only hint: which WireType a wire connected to this pin is expected to
+   * carry (e.g. a lamp's neutral-side pin). Purely cosmetic/UX — consumed by
+   * store/wires.ts's completeWire to auto-color a new wire on connection,
+   * and NEVER read by engine/solver.ts. Distinct from `potential` above,
+   * which the solver treats as a real source of that tag unconditionally —
+   * a load/coil pin only ever receives phase/neutral from whatever it's
+   * wired to, so it must not use `potential` (that would make the solver
+   * inject a spurious source tag onto that pin's net regardless of actual
+   * wiring).
+   */
+  suggestedWireType?: WireType
 }
 
 /** How a pair of pins within one component conducts, and what runtime input/output controls it (see engine/solver.ts). */

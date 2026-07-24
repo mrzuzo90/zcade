@@ -36,8 +36,8 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: '4', offset: { x: 60, y: 40 }, kind: 'power_no' },
       { id: '5', offset: { x: 0, y: 70 }, kind: 'power_no' },
       { id: '6', offset: { x: 60, y: 70 }, kind: 'power_no' },
-      { id: 'A1', offset: { x: 30, y: 0 }, kind: 'coil', linkedTo: 'coil' },
-      { id: 'A2', offset: { x: 30, y: 80 }, kind: 'coil', linkedTo: 'coil' },
+      { id: 'A1', offset: { x: 30, y: 0 }, kind: 'coil', linkedTo: 'coil', suggestedWireType: 'L1' },
+      { id: 'A2', offset: { x: 30, y: 80 }, kind: 'coil', linkedTo: 'coil', suggestedWireType: 'N' },
     ],
     // All three power poles are driven by this same instance's own coil (A1-A2) —
     // a separate remotely-wired contact block sharing the same reference tag
@@ -126,8 +126,8 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     width: 30,
     height: 30,
     pins: [
-      { id: '1', offset: { x: 15, y: 0 }, kind: 'signal' },
-      { id: '2', offset: { x: 15, y: 30 }, kind: 'signal' },
+      { id: '1', offset: { x: 15, y: 0 }, kind: 'signal', suggestedWireType: 'L1' },
+      { id: '2', offset: { x: 15, y: 30 }, kind: 'signal', suggestedWireType: 'N' },
     ],
   },
 
@@ -275,8 +275,8 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     width: 40,
     height: 40,
     pins: [
-      { id: 'A1', offset: { x: 0, y: 0 }, kind: 'coil', linkedTo: 'coil' },
-      { id: 'A2', offset: { x: 40, y: 0 }, kind: 'coil', linkedTo: 'coil' },
+      { id: 'A1', offset: { x: 0, y: 0 }, kind: 'coil', linkedTo: 'coil', suggestedWireType: 'L1' },
+      { id: 'A2', offset: { x: 40, y: 0 }, kind: 'coil', linkedTo: 'coil', suggestedWireType: 'N' },
       { id: '55', offset: { x: 0, y: 20 }, kind: 'auxiliary_no' },
       { id: '56', offset: { x: 40, y: 20 }, kind: 'auxiliary_no' },
       { id: '57', offset: { x: 0, y: 40 }, kind: 'auxiliary_nc' },
@@ -341,8 +341,8 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: '6', offset: { x: 60, y: 50 }, kind: 'power_no' },
       { id: '7', offset: { x: 0, y: 70 }, kind: 'power_no' },
       { id: '8', offset: { x: 60, y: 70 }, kind: 'power_no' },
-      { id: 'A1', offset: { x: 30, y: 0 }, kind: 'coil', linkedTo: 'coil' },
-      { id: 'A2', offset: { x: 30, y: 80 }, kind: 'coil', linkedTo: 'coil' },
+      { id: 'A1', offset: { x: 30, y: 0 }, kind: 'coil', linkedTo: 'coil', suggestedWireType: 'L1' },
+      { id: 'A2', offset: { x: 30, y: 80 }, kind: 'coil', linkedTo: 'coil', suggestedWireType: 'N' },
     ],
     contacts: [
       { pins: ['1', '2'], behavior: 'no', control: 'coil' },
