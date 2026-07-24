@@ -80,6 +80,12 @@ const ALL_TYPES = [
   'at_celda_interruptor_seccionador_telecontrol',
   'at_celda_interruptor_seccionador_seccionalizadora',
   'at_transformador_at_bt',
+  // Unifilar — alta tensión (multi-segment cells + medida/remonte)
+  'at_celda_interruptor_seccionador_fusible',
+  'at_celda_interruptor_seccionador_interruptor_automatico',
+  'at_celda_servicios_auxiliares',
+  'at_celda_medida',
+  'at_celda_remonte',
 ]
 
 describe('symbolRegistry', () => {

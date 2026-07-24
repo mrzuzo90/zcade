@@ -1,0 +1,13 @@
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- at_celda_remonte: HV riser/link cell — busbar riser pass-through. -->
+  <g id="layer:base">
+    <path d="M2,2 L58,2 L58,58 L2,58 Z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <path d="M30,0 L30,24" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M30,24 A6,6 0 1,1 30,36" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M30,36 L30,60" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="IN" data-pin-kind="power" cx="30" cy="0" r="1"/>
+    <circle data-pin-id="OUT" data-pin-kind="power" cx="30" cy="60" r="1"/>
+  </g>
+</svg>

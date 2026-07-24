@@ -985,6 +985,87 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
       { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
     ],
   },
+
+  // -- Alta tensión: multi-segment cells (60x60) ---------------------------
+  // Several apparatus chained in series on one line, each an always_closed
+  // segment joined at an intermediate MID pin.
+  at_celda_interruptor_seccionador_fusible: {
+    type: 'at_celda_interruptor_seccionador_fusible',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'MID', offset: { x: 30, y: 30 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+    contacts: [
+      { pins: ['IN', 'MID'], behavior: 'always_closed' },
+      { pins: ['MID', 'OUT'], behavior: 'always_closed' },
+    ],
+  },
+  at_celda_interruptor_seccionador_interruptor_automatico: {
+    type: 'at_celda_interruptor_seccionador_interruptor_automatico',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'MID', offset: { x: 30, y: 30 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+    contacts: [
+      { pins: ['IN', 'MID'], behavior: 'always_closed' },
+      { pins: ['MID', 'OUT'], behavior: 'always_closed' },
+    ],
+  },
+  // PROVISIONAL layout — spec flags this cell for Zuzo review. Main line runs
+  // IN→MID→OUT through a series fuse; AUX is an isolated auxiliary-transformer
+  // secondary (declared pin, deliberately no bridging segment). Confirm the
+  // internal apparatus set with Zuzo before treating this as final.
+  at_celda_servicios_auxiliares: {
+    type: 'at_celda_servicios_auxiliares',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'MID', offset: { x: 30, y: 30 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+      { id: 'AUX', offset: { x: 60, y: 30 }, kind: 'power' },
+    ],
+    contacts: [
+      { pins: ['IN', 'MID'], behavior: 'always_closed' },
+      { pins: ['MID', 'OUT'], behavior: 'always_closed' },
+    ],
+  },
+  at_celda_medida: {
+    type: 'at_celda_medida',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  at_celda_remonte: {
+    type: 'at_celda_remonte',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
 }
 
 export function getComponentDefinition(type: string): ComponentDefinition {

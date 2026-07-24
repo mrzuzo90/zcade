@@ -1,0 +1,14 @@
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- at_celda_medida: HV metering cell — line pass-through with a measurement-transformer tap. -->
+  <g id="layer:base">
+    <path d="M2,2 L58,2 L58,58 L2,58 Z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <path d="M30,0 L30,60" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M30,24 L42,24" stroke="currentColor" stroke-width="1.2" fill="none"/>
+    <path d="M46,24 A4,4 0 1,0 46,24.01 Z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+    <path d="M52,24 A4,4 0 1,0 52,24.01 Z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="IN" data-pin-kind="power" cx="30" cy="0" r="1"/>
+    <circle data-pin-id="OUT" data-pin-kind="power" cx="30" cy="60" r="1"/>
+  </g>
+</svg>
