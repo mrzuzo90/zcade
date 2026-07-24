@@ -74,6 +74,12 @@ const ALL_TYPES = [
   'bt_cuadro_de_protecciones',
   'bt_caja_seccionamiento',
   'bt_caja_general_proteccion',
+  // Unifilar — alta tensión (single-apparatus cells)
+  'at_celda_interruptor_automatico',
+  'at_celda_interruptor_seccionador',
+  'at_celda_interruptor_seccionador_telecontrol',
+  'at_celda_interruptor_seccionador_seccionalizadora',
+  'at_transformador_at_bt',
 ]
 
 describe('symbolRegistry', () => {

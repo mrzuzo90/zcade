@@ -921,6 +921,70 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     ],
     contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
   },
+
+  // -- Alta tensión: single-apparatus cells (60x60) ------------------------
+  // Each cell is one physical unit installed/operated as a whole; a
+  // single-apparatus cell is one pass-through segment. The HV/LV transformer
+  // is isolated (B). See docs/.../unifilar-symbol-integration plan Task 7.
+  at_celda_interruptor_automatico: {
+    type: 'at_celda_interruptor_automatico',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  at_celda_interruptor_seccionador: {
+    type: 'at_celda_interruptor_seccionador',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  at_celda_interruptor_seccionador_telecontrol: {
+    type: 'at_celda_interruptor_seccionador_telecontrol',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  at_celda_interruptor_seccionador_seccionalizadora: {
+    type: 'at_celda_interruptor_seccionador_seccionalizadora',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  at_transformador_at_bt: {
+    type: 'at_transformador_at_bt',
+    label: 'AT',
+    category: 'electrical',
+    width: 60,
+    height: 60,
+    pins: [
+      { id: 'IN', offset: { x: 30, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 30, y: 60 }, kind: 'power' },
+    ],
+  },
 }
 
 export function getComponentDefinition(type: string): ComponentDefinition {

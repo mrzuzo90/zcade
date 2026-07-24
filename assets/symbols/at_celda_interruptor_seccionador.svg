@@ -1,0 +1,14 @@
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- at_celda_interruptor_seccionador: HV cell with a switch-disconnector blade. -->
+  <g id="layer:base">
+    <path d="M2,2 L58,2 L58,58 L2,58 Z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <path d="M30,0 L30,22" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M30,22 L41,40" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M24,40 L36,40" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M30,40 L30,60" stroke="currentColor" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="pins">
+    <circle data-pin-id="IN" data-pin-kind="power" cx="30" cy="0" r="1"/>
+    <circle data-pin-id="OUT" data-pin-kind="power" cx="30" cy="60" r="1"/>
+  </g>
+</svg>
