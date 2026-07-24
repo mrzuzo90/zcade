@@ -475,6 +475,21 @@ SYM, CORE, and ROUTE's three sections above were built in parallel (each in its 
 
 ---
 
+## Implementation Status (Wire lane-offset rendering + phase/neutral pin hints)
+
+Merged to `main` 2026-07-24 (`88a4fec`), via `docs/superpowers/specs/2026-07-24-wire-lane-offset-and-phase-neutral-design.md` → `docs/superpowers/plans/2026-07-24-wire-lane-offset-and-phase-neutral.md`, executed subagent-driven (8 tasks, each independently implemented + reviewed, plus a final whole-branch review). Two independent features:
+
+- **Phase/neutral auto-coloring**: new UI-only `PinDefinition.suggestedWireType` field (`types/circuit.ts`) — deliberately distinct from the solver-read `potential` field, since a load/coil pin only *receives* phase/neutral rather than sourcing it. Set on `lamp` (pin `1`=`L1`, pin `2`=`N`) and on `contactor_3p`/`contactor_4p`/`timer_ton`'s coil pins (`A1`=`L1`, `A2`=`N`, the real IEC ladder-diagram convention — all coils treated as AC for now). `store/wires.ts`'s `completeWire` auto-assigns a new wire's color from either endpoint's hint: one-sided hint wins, both-sides-agree wins, both-sides-disagree leaves it untyped rather than guessing.
+- **Wire lane-offset rendering**: `engine/wiring.ts` gained `findOverlaps` (detects wires whose routed paths share a fully-overlapping collinear segment, via an interval-merge sweep — distinct from `findCrossings`, which only handles perpendicular non-shared-endpoint crossings) and `pathWithLaneOffsets` (nudges each wire in a group into its own parallel lane, jogging in/out so pin endpoints are always preserved exactly). Wired into `WireGeometryCache`'s existing incremental-recompute pipeline and `WireLayer.tsx`, same pattern as the pre-existing crossing-hop feature.
+- Manually verified end-to-end in a real browser by inspecting the live Konva render tree directly (`window.Konva.stages[0].find('Line')`) rather than relying on screenshots — confirmed a symmetric ±2px offset (4px `LANE_SPACING`) on both a shared horizontal and a shared vertical segment for the same wire pair, exact pin reconnection at both ends, and correct auto-color assignment (`#8b5a2b`/brown/L1) with no manual `wireType` set.
+- **Known accepted limitation** (documented in `WireLayer.tsx`): when a wire has both a lane-offset and a crossing-hop on the same segment, the hop's crossing-point (computed by `findCrossings` against the pre-offset path) no longer lands on the now-shifted segment, so `pathWithHops` silently skips the arc there — the wire still renders correctly in its lane, it just falls back to a plain (un-arced) crossing at that point. Not a bug, not worth fixing without re-projecting hop points onto the offset path.
+
+**Verified working**: `npm run type-check`, `npm run lint`, `npm run test` (355/355), `npm run build`, all clean on `main` post-merge.
+
+**Next up (not yet done)**: `vite.config.ts`'s vitest config has no `test.exclude` entry for `.claude/**`. Vitest's own default excludes (`node_modules`, `dist`, `.{idea,git,cache,output,temp}`, etc.) don't cover `.claude/` — so whenever a `.claude/worktrees/<name>/` directory happens to exist on disk during a `npm run test` run from the main checkout (this harness creates worktrees there routinely), vitest silently walks into it and double-runs every test file it finds, including whatever the worktree's own `tests/` looked like at that point. This was caught by accident during this session's post-merge verification (a stale Tauri-autosave-timing test from inside a not-yet-cleaned-up worktree showed up as a spurious `main`-branch failure) — not a regression in the merged code, but a real config gap. **Fix**: add `.claude/**` (or at least `.claude/worktrees/**`) to `test.exclude` in `vite.config.ts`.
+
+---
+
 ## Critical Requirements & Constraints
 
 ### Offline-First & Connectivity
