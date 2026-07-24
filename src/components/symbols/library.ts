@@ -763,6 +763,81 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     ],
     contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
   },
+
+  // -- Medida --------------------------------------------------------------
+  // Meters/wattmeters/indicator sit inline (passthrough C). The current
+  // summator is an isolated measurement block (B, no series contact).
+  bt_medidor_directo: {
+    type: 'bt_medidor_directo',
+    label: 'P',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_medidor_indirecto: {
+    type: 'bt_medidor_indirecto',
+    label: 'P',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_vatimetro_directo: {
+    type: 'bt_vatimetro_directo',
+    label: 'P',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_vatimetro_indirecto: {
+    type: 'bt_vatimetro_indirecto',
+    label: 'P',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_indicador: {
+    type: 'bt_indicador',
+    label: 'P',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_sumador_intensidades: {
+    type: 'bt_sumador_intensidades',
+    label: 'P',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+  },
 }
 
 export function getComponentDefinition(type: string): ComponentDefinition {

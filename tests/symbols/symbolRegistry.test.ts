@@ -59,6 +59,13 @@ const ALL_TYPES = [
   'bt_transformador',
   'bt_inversor',
   'bt_regulador_cc',
+  // Unifilar — medida
+  'bt_medidor_directo',
+  'bt_medidor_indirecto',
+  'bt_vatimetro_directo',
+  'bt_vatimetro_indirecto',
+  'bt_indicador',
+  'bt_sumador_intensidades',
 ]
 
 describe('symbolRegistry', () => {
