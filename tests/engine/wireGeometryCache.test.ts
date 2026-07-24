@@ -94,4 +94,42 @@ describe('WireGeometryCache', () => {
     const after = cache.update(wires, components)
     expect(after.changed).toEqual(new Set(['w1']))
   })
+
+  it('recomputes overlaps only for pairs touching a changed wire', () => {
+    const cache = new WireGeometryCache()
+    const components: Record<string, ComponentInstance> = {
+      a: instance({ id: 'a', type: 'lamp', x: 0, y: 0 }),
+      b: instance({ id: 'b', type: 'lamp', x: 100, y: 0 }),
+      c: instance({ id: 'c', type: 'lamp', x: 0, y: 0 }),
+      d: instance({ id: 'd', type: 'lamp', x: 100, y: 0 }),
+    }
+    const w1: Wire = { id: 'w1', from: { componentId: 'a', pinId: '1' }, to: { componentId: 'b', pinId: '1' } }
+    const w2: Wire = { id: 'w2', from: { componentId: 'c', pinId: '1' }, to: { componentId: 'd', pinId: '1' } }
+
+    const first = cache.update([w1, w2], components)
+    expect(first.overlaps).toHaveLength(1)
+    expect(first.overlaps[0].wireIds.slice().sort()).toEqual(['w1', 'w2'])
+
+    // Move an unrelated component — the overlap must survive untouched (same array reference).
+    const unrelated = instance({ id: 'z', type: 'lamp', x: 500, y: 500 })
+    const second = cache.update([w1, w2], { ...components, z: unrelated })
+    expect(second.changed.size).toBe(0)
+    expect(second.overlaps).toBe(first.overlaps)
+  })
+
+  it('drops an overlap when the wire that caused it is removed', () => {
+    const cache = new WireGeometryCache()
+    const components: Record<string, ComponentInstance> = {
+      a: instance({ id: 'a', type: 'lamp', x: 0, y: 0 }),
+      b: instance({ id: 'b', type: 'lamp', x: 100, y: 0 }),
+      c: instance({ id: 'c', type: 'lamp', x: 0, y: 0 }),
+      d: instance({ id: 'd', type: 'lamp', x: 100, y: 0 }),
+    }
+    const w1: Wire = { id: 'w1', from: { componentId: 'a', pinId: '1' }, to: { componentId: 'b', pinId: '1' } }
+    const w2: Wire = { id: 'w2', from: { componentId: 'c', pinId: '1' }, to: { componentId: 'd', pinId: '1' } }
+
+    cache.update([w1, w2], components)
+    const after = cache.update([w1], components)
+    expect(after.overlaps).toHaveLength(0)
+  })
 })

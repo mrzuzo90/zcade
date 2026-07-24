@@ -1,5 +1,5 @@
-import type { ComponentInstance, Crossing, Junction, Point, Wire } from '@/types/circuit'
-import { findCrossings, findJunctions, getWirePath } from '@/engine/wiring'
+import type { ComponentInstance, Crossing, Junction, Overlap, Point, Wire } from '@/types/circuit'
+import { findCrossings, findJunctions, findOverlaps, getWirePath } from '@/engine/wiring'
 
 interface PathEntry {
   path: Point[] | null
@@ -58,6 +58,7 @@ export class WireGeometryCache {
   private pathEntries = new Map<string, PathEntry>()
   private lastJunctions: Junction[] = []
   private lastCrossings: Crossing[] = []
+  private lastOverlaps: Overlap[] = []
 
   private updatePaths(
     wires: Wire[],
@@ -93,15 +94,15 @@ export class WireGeometryCache {
   }
 
   /**
-   * Resolves this tick's wire paths, junction dots, and crossing hops.
+   * Resolves this tick's wire paths, junction dots, crossing hops, and lane offsets.
    * `changed` (also returned) is the set of wire ids whose path differs from
    * the previous call — empty on a render where nothing moved, in which case
-   * junctions/crossings are reused verbatim with no recompute at all.
+   * junctions/crossings/overlaps are reused verbatim with no recompute at all.
    */
   update(
     wires: Wire[],
     components: Record<string, ComponentInstance>,
-  ): { paths: Record<string, Point[] | null>; junctions: Junction[]; crossings: Crossing[]; changed: Set<string> } {
+  ): { paths: Record<string, Point[] | null>; junctions: Junction[]; crossings: Crossing[]; overlaps: Overlap[]; changed: Set<string> } {
     const { paths, changed } = this.updatePaths(wires, components)
 
     if (changed.size > 0) {
@@ -112,9 +113,13 @@ export class WireGeometryCache {
       const freshCrossings = findCrossings(wires, components, changed)
       const retainedCrossings = this.lastCrossings.filter((c) => !c.wireIds.some((id) => changed.has(id)))
       this.lastCrossings = [...retainedCrossings, ...freshCrossings]
+
+      const freshOverlaps = findOverlaps(wires, components, changed)
+      const retainedOverlaps = this.lastOverlaps.filter((o) => !o.wireIds.some((id) => changed.has(id)))
+      this.lastOverlaps = [...retainedOverlaps, ...freshOverlaps]
     }
 
-    return { paths, junctions: this.lastJunctions, crossings: this.lastCrossings, changed }
+    return { paths, junctions: this.lastJunctions, crossings: this.lastCrossings, overlaps: this.lastOverlaps, changed }
   }
 
   /** Drops all memoized state (e.g. on `.zcade` file load / new project). */
@@ -122,5 +127,6 @@ export class WireGeometryCache {
     this.pathEntries.clear()
     this.lastJunctions = []
     this.lastCrossings = []
+    this.lastOverlaps = []
   }
 }
