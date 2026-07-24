@@ -5,7 +5,8 @@ import type { ComponentInstance, Point } from '@/types/circuit'
 import { useCanvasStore } from '@/store/canvas'
 import { useWireStore } from '@/store/wires'
 import { useSimulationStore } from '@/store/simulation'
-import { dragWireSegment, getPinPosition, pathWithHops, routeOrthogonal, wireColor } from '@/engine/wiring'
+import { dragWireSegment, getPinPosition, pathWithHops, pathWithLaneOffsets, routeOrthogonal, wireColor } from '@/engine/wiring'
+import type { LaneShift } from '@/engine/wiring'
 import { buildCircuitGraph } from '@/engine/graph'
 import { WireGeometryCache } from '@/engine/wireGeometryCache'
 
@@ -42,7 +43,7 @@ export function WireLayer({ components, previewPoint }: WireLayerProps) {
   const geometryCache = useRef(new WireGeometryCache()).current
 
   const wireList = useMemo(() => order.map((id) => wires[id]).filter(Boolean), [order, wires])
-  const { paths, junctions, crossings } = useMemo(
+  const { paths, junctions, crossings, overlaps } = useMemo(
     () => geometryCache.update(wireList, components),
     [geometryCache, wireList, components],
   )
@@ -63,6 +64,28 @@ export function WireLayer({ components, previewPoint }: WireLayerProps) {
     return map
   }, [crossings, order])
 
+  const LANE_SPACING = 4
+
+  // wireId -> LaneShift[] to apply to that wire's path. Lane index within a
+  // group is assigned by each wire's position in `order` (same determinism
+  // rule as hopsByWire), then centered around 0 so the group fans out
+  // symmetrically instead of all shifting the same direction.
+  const laneShiftsByWire = useMemo(() => {
+    const map = new Map<string, LaneShift[]>()
+    for (const overlap of overlaps) {
+      const sortedIds = [...overlap.wireIds].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+      const count = sortedIds.length
+      sortedIds.forEach((wireId, laneIndex) => {
+        const offset = (laneIndex - (count - 1) / 2) * LANE_SPACING
+        const shift: LaneShift = { axis: overlap.axis, fixed: overlap.fixed, start: overlap.start, end: overlap.end, offset }
+        const list = map.get(wireId)
+        if (list) list.push(shift)
+        else map.set(wireId, [shift])
+      })
+    }
+    return map
+  }, [overlaps, order])
+
   const selectedNetId = selectedWireId ? graph.nets.find((net) => net.wireIds.includes(selectedWireId))?.id : undefined
 
   const pendingComponent = pendingFrom ? components[pendingFrom.componentId] : undefined
@@ -78,8 +101,10 @@ export function WireLayer({ components, previewPoint }: WireLayerProps) {
         const isInSelectedNet = selectedNetId !== undefined && graph.pinToNet[`${wire.from.componentId}:${wire.from.pinId}`] === selectedNetId
         const fromKey = `${wire.from.componentId}:${wire.from.pinId}`
         const isEnergized = isRunning && (simNetPotentials[simPinToNet[fromKey]]?.length ?? 0) > 0
+        const laneShifts = laneShiftsByWire.get(wire.id)
+        const laneAdjustedPath = laneShifts && laneShifts.length > 0 ? pathWithLaneOffsets(path, laneShifts) : path
         const hops = hopsByWire.get(wire.id)
-        const renderedPath = hops && hops.length > 0 ? pathWithHops(path, hops) : path
+        const renderedPath = hops && hops.length > 0 ? pathWithHops(laneAdjustedPath, hops) : laneAdjustedPath
         const points = renderedPath.flatMap((p) => [p.x, p.y])
         return (
           <Line
