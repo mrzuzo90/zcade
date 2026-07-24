@@ -10,6 +10,8 @@ import type { LaneShift } from '@/engine/wiring'
 import { buildCircuitGraph } from '@/engine/graph'
 import { WireGeometryCache } from '@/engine/wireGeometryCache'
 
+const LANE_SPACING = 4
+
 interface WireLayerProps {
   components: Record<string, ComponentInstance>
   previewPoint: Point | null
@@ -64,8 +66,6 @@ export function WireLayer({ components, previewPoint }: WireLayerProps) {
     return map
   }, [crossings, order])
 
-  const LANE_SPACING = 4
-
   // wireId -> LaneShift[] to apply to that wire's path. Lane index within a
   // group is assigned by each wire's position in `order` (same determinism
   // rule as hopsByWire), then centered around 0 so the group fans out
@@ -104,6 +104,10 @@ export function WireLayer({ components, previewPoint }: WireLayerProps) {
         const laneShifts = laneShiftsByWire.get(wire.id)
         const laneAdjustedPath = laneShifts && laneShifts.length > 0 ? pathWithLaneOffsets(path, laneShifts) : path
         const hops = hopsByWire.get(wire.id)
+        // Hop points are computed against the pre-offset path by `findCrossings`,
+        // so a hop landing within a lane-offset corridor won't find its point on
+        // the now-shifted segment and silently falls back to a plain crossing
+        // (same fallback `pathWithHops` uses for a hop too close to segment end).
         const renderedPath = hops && hops.length > 0 ? pathWithHops(laneAdjustedPath, hops) : laneAdjustedPath
         const points = renderedPath.flatMap((p) => [p.x, p.y])
         return (

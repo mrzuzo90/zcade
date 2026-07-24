@@ -244,8 +244,11 @@ export const useWireStore = create<WireStore>((set, get) => {
       const id = generateWireId()
       const fromHint = suggestedWireTypeFor(pendingFrom)
       const toHint = suggestedWireTypeFor(endpoint)
-      const wireType = fromHint && toHint ? (fromHint === toHint ? fromHint : undefined) : (fromHint ?? toHint)
-      const wire: Wire = wireType ? { id, from: pendingFrom, to: endpoint, wireType } : { id, from: pendingFrom, to: endpoint }
+      const wireType =
+        fromHint && toHint ? (fromHint === toHint ? fromHint : undefined) : (fromHint ?? toHint)
+      const wire: Wire = wireType
+        ? { id, from: pendingFrom, to: endpoint, wireType }
+        : { id, from: pendingFrom, to: endpoint }
       // Clearing the in-progress draw gesture is transient UI state, not
       // undoable content — see file header comment.
       set({ pendingFrom: null })
@@ -296,7 +299,9 @@ export const useWireStore = create<WireStore>((set, get) => {
     setWirePoints: (id, points) => {
       const existing = get().wires[id]
       if (!existing) return
-      useHistoryStore.getState().execute(new SetWirePointsCommand(id, existing.points, points, setter))
+      useHistoryStore
+        .getState()
+        .execute(new SetWirePointsCommand(id, existing.points, points, setter))
     },
 
     selectWire: (id) => set({ selectedWireId: id, pendingFrom: null }),
