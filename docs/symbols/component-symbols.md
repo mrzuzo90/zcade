@@ -276,6 +276,97 @@ to `red` (`DEFAULT_LAMP_COLOR`) for unset/unrecognized values. Cosmetic only;
 
 ---
 
+## Unifilar (single-line) symbols
+
+52 single-line-diagram symbols extracted from the ADG sheet
+(`assets/symbols/unifilares/index.json`) and integrated 2026-07-25 (see
+`docs/superpowers/plans/2026-07-25-unifilar-symbol-integration.md`). Palette
+grouping lives in `src/components/symbols/categories.ts`, not
+`ComponentDefinition.category` (all keep `category: 'electrical'`).
+
+**Shared pin convention** (unless a table below says otherwise): a vertical
+2-pin pass-through, `IN` at `(w/2, 0)` and `OUT` at `(w/2, h)`, both
+`kind: power`. Archetype legend: **C** = pass-through (`always_closed`
+segment) · **B** = isolated (pins, no bridging segment) · **A** = source
+(single pin with fixed `potential`) · **D** = signal load (2 `signal` pins,
+no contacts → solver `lit`) · **E** = multi-segment cell (chained via `MID`) ·
+**F** = ANSI relay placeholder (`no`/`control:'tripped'`, never asserted yet).
+
+### Protecciones (40×40, `IN 20,0` / `OUT 20,40`)
+
+| type | label | archetype |
+|---|---|---|
+| `bt_seccionador` | Q | C |
+| `bt_interruptor_seccionador` | Q | C |
+| `bt_fusible` | F | C |
+| `bt_fusible_seccionable` | F | C |
+| `bt_interruptor_diferencial` | Q | C |
+| `bt_interruptor_automatico_rele` | Q | C |
+| `bt_interruptor_temporizador` | Q | C |
+| `bt_protector_sobretensiones` | F | B (no contact) |
+| `protecciones_rele_27_tension_minima` | F | F |
+| `protecciones_rele_57_cortocircuito` | F | F |
+| `protecciones_rele_59_tension_maxima` | F | F |
+| `protecciones_rele_59n_tension_maxima_homopolar` | F | F |
+| `protecciones_rele_64_fallo_tierra` | F | F |
+| `protecciones_rele_81_frecuencia` | F | F |
+| `protecciones_rele_87_diferencial` | F | F |
+
+### Líneas y embarrados (40×40, C — conductor count is cosmetic)
+
+`bt_embarrado`, `bt_linea_monofasica`, `bt_linea_trifasica_f`,
+`bt_linea_trifasica_fn`, `bt_linea_trifasica_fnt`, `bt_linea_cc`,
+`bt_linea_cc_tierra` — all label `W`, single `always_closed` `IN`/`OUT`
+segment. The mono/3F/±/etc. distinction is drawn as slash marks, not modeled
+as separate pins (single-line abstraction — see plan Task 3).
+
+### Fuentes (40×40) & Máquinas (40×40)
+
+| type | label | archetype | pins |
+|---|---|---|---|
+| `bt_generador_ca` | G | A | `L 20,0` potential `L1` |
+| `bt_bateria_almacenamiento` | G | A | `+ 20,0` potential `DC_POS` |
+| `bt_modulos_fotovoltaicos` | G | A | `+ 20,0` potential `DC_POS` |
+| `bt_bateria_condensadores` | C | B | `IN`/`OUT` (no contact) |
+| `bt_transformador` | T | B | `IN`/`OUT` (no contact) |
+| `bt_inversor` | G | B | `IN`/`OUT` (no contact) |
+| `bt_regulador_cc` | G | C | `IN`/`OUT` (always_closed) |
+
+### Medida (40×40)
+
+`bt_medidor_directo`, `bt_medidor_indirecto`, `bt_vatimetro_directo`,
+`bt_vatimetro_indirecto`, `bt_indicador` — label `P`, archetype C.
+`bt_sumador_intensidades` — label `P`, archetype B (isolated, no contact).
+
+### Baja tensión (40×40)
+
+| type | label | archetype | pins |
+|---|---|---|---|
+| `bt_puesta_a_tierra` | PE | A | `PE 20,0` potential `PE` |
+| `bt_iluminacion` | H | D | `1 20,0` signal (L1) / `2 20,40` signal (N) |
+| `bt_enchufe` | X | C | `IN`/`OUT` |
+| `bt_resistencia` | R | C | `IN`/`OUT` |
+| `bt_cuadro_de_protecciones` | X | C | `IN`/`OUT` |
+| `bt_caja_seccionamiento` | X | C | `IN`/`OUT` |
+| `bt_caja_general_proteccion` | X | C | `IN`/`OUT` |
+
+### Alta tensión (60×60, `IN 30,0` / `OUT 30,60`, label `AT`)
+
+| type | archetype | segments |
+|---|---|---|
+| `at_celda_interruptor_automatico` | C | 1 (always_closed) |
+| `at_celda_interruptor_seccionador` | C | 1 |
+| `at_celda_interruptor_seccionador_telecontrol` | C | 1 |
+| `at_celda_interruptor_seccionador_seccionalizadora` | C | 1 |
+| `at_transformador_at_bt` | B | none (isolated) |
+| `at_celda_medida` | C | 1 |
+| `at_celda_remonte` | C | 1 |
+| `at_celda_interruptor_seccionador_fusible` | E | 2 (`IN-MID`, `MID-OUT`), extra pin `MID 30,30` |
+| `at_celda_interruptor_seccionador_interruptor_automatico` | E | 2, extra pin `MID 30,30` |
+| `at_celda_servicios_auxiliares` | E+B | 2 (`IN-MID`,`MID-OUT`) + isolated `AUX 60,30` — **PROVISIONAL, pending Zuzo review** |
+
+---
+
 ## Adding to this document
 
 When you add a new type to `COMPONENT_LIBRARY`, add a section here with the
