@@ -595,6 +595,96 @@ export const COMPONENT_LIBRARY: Record<string, ComponentDefinition> = {
     ],
     contacts: [{ pins: ['IN', 'OUT'], behavior: 'no', control: 'tripped' }],
   },
+
+  // -- Líneas y embarrados (single-line feeders) ---------------------------
+  // All modeled as a single electrical pass-through (one always_closed
+  // segment); the conductor count (mono / 3F / 3F+N / 3F+N+T / CC±/±T) is
+  // drawn cosmetically as slash marks, not as separate pins — a single-line
+  // symbol has one physical line entry/exit. See the plan's Task 3 note.
+  bt_embarrado: {
+    type: 'bt_embarrado',
+    label: 'W',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_linea_monofasica: {
+    type: 'bt_linea_monofasica',
+    label: 'W',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_linea_trifasica_f: {
+    type: 'bt_linea_trifasica_f',
+    label: 'W',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_linea_trifasica_fn: {
+    type: 'bt_linea_trifasica_fn',
+    label: 'W',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_linea_trifasica_fnt: {
+    type: 'bt_linea_trifasica_fnt',
+    label: 'W',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_linea_cc: {
+    type: 'bt_linea_cc',
+    label: 'W',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
+  bt_linea_cc_tierra: {
+    type: 'bt_linea_cc_tierra',
+    label: 'W',
+    category: 'electrical',
+    width: 40,
+    height: 40,
+    pins: [
+      { id: 'IN', offset: { x: 20, y: 0 }, kind: 'power' },
+      { id: 'OUT', offset: { x: 20, y: 40 }, kind: 'power' },
+    ],
+    contacts: [{ pins: ['IN', 'OUT'], behavior: 'always_closed' }],
+  },
 }
 
 export function getComponentDefinition(type: string): ComponentDefinition {

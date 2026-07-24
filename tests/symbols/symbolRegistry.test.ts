@@ -43,6 +43,14 @@ const ALL_TYPES = [
   'protecciones_rele_64_fallo_tierra',
   'protecciones_rele_81_frecuencia',
   'protecciones_rele_87_diferencial',
+  // Unifilar — líneas y embarrados
+  'bt_embarrado',
+  'bt_linea_monofasica',
+  'bt_linea_trifasica_f',
+  'bt_linea_trifasica_fn',
+  'bt_linea_trifasica_fnt',
+  'bt_linea_cc',
+  'bt_linea_cc_tierra',
 ]
 
 describe('symbolRegistry', () => {
