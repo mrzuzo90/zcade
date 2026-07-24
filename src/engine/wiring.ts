@@ -468,6 +468,78 @@ export function findOverlaps(
   return overlaps
 }
 
+export interface LaneShift {
+  axis: 'h' | 'v'
+  /** The shared coordinate this shift applies to: y for a horizontal segment, x for a vertical one. */
+  fixed: number
+  /** Range along the moving axis (x for horizontal, y for vertical) the offset applies within. */
+  start: number
+  end: number
+  /** Perpendicular offset to apply within [start, end], in px (positive = down/right). */
+  offset: number
+}
+
+/**
+ * Returns `path` with each segment nudged perpendicular by its matching
+ * `LaneShift`'s offset, within that shift's [start, end] range along the
+ * segment — the rendering counterpart to `findOverlaps`. A segment with no
+ * matching shift (different axis, or `fixed` coordinate not within
+ * EPSILON) is left untouched. A segment only partially covered by its
+ * shift's range gets a short perpendicular jog in and out of the offset
+ * corridor rather than being fully displaced, so it still meets its own
+ * pin/bend endpoints exactly. Endpoints of the overall path are always
+ * preserved. When a shift covers a segment's entire span, the jog-in/out
+ * points land exactly on that segment's own start/end (offset 0) —
+ * harmless zero-length duplicate points, not a bug.
+ *
+ * Note: this looks up at most one matching shift per segment (by
+ * axis+fixed), so a single wire with two separate segments on the exact
+ * same canonical line but different shift ranges is not supported — not a
+ * real scenario for the Manhattan-routed wires this app produces.
+ */
+export function pathWithLaneOffsets(path: Point[], shifts: LaneShift[]): Point[] {
+  if (shifts.length === 0 || path.length < 2) return path
+
+  const result: Point[] = [path[0]]
+  for (let i = 0; i < path.length - 1; i++) {
+    const segStart = path[i]
+    const segEnd = path[i + 1]
+    const horizontal = Math.abs(segStart.y - segEnd.y) <= EPSILON
+    const axis: 'h' | 'v' = horizontal ? 'h' : 'v'
+    const fixed = horizontal ? segStart.y : segStart.x
+    const shift = shifts.find((s) => s.axis === axis && Math.abs(s.fixed - fixed) <= EPSILON)
+
+    if (!shift) {
+      result.push(segEnd)
+      continue
+    }
+
+    const segMin = horizontal ? Math.min(segStart.x, segEnd.x) : Math.min(segStart.y, segEnd.y)
+    const segMax = horizontal ? Math.max(segStart.x, segEnd.x) : Math.max(segStart.y, segEnd.y)
+    const overlapStart = Math.max(segMin, shift.start)
+    const overlapEnd = Math.min(segMax, shift.end)
+
+    if (overlapEnd <= overlapStart + EPSILON) {
+      result.push(segEnd)
+      continue
+    }
+
+    const increasing = horizontal ? segEnd.x > segStart.x : segEnd.y > segStart.y
+    const enter = increasing ? overlapStart : overlapEnd
+    const exit = increasing ? overlapEnd : overlapStart
+
+    const pointAt = (pos: number, offsetPerp: number): Point =>
+      horizontal ? { x: pos, y: fixed + offsetPerp } : { x: fixed + offsetPerp, y: pos }
+
+    result.push(pointAt(enter, 0))
+    result.push(pointAt(enter, shift.offset))
+    result.push(pointAt(exit, shift.offset))
+    result.push(pointAt(exit, 0))
+    result.push(segEnd)
+  }
+  return result
+}
+
 const HOP_SAMPLES = 8
 
 /**

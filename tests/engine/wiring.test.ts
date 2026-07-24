@@ -8,6 +8,7 @@ import {
   getPinPosition,
   getWirePath,
   pathWithHops,
+  pathWithLaneOffsets,
   routeOrthogonal,
 } from '@/engine/wiring'
 
@@ -392,5 +393,63 @@ describe('findOverlaps', () => {
     const restricted = findOverlaps([w1, w2, w3, w4], components, new Set(['w1']))
     expect(restricted).toHaveLength(1)
     expect(restricted[0].wireIds.slice().sort()).toEqual(['w1', 'w2'])
+  })
+})
+
+describe('pathWithLaneOffsets', () => {
+  it('is a no-op when there are no shifts', () => {
+    const path = [{ x: 0, y: 50 }, { x: 100, y: 50 }]
+    expect(pathWithLaneOffsets(path, [])).toBe(path)
+  })
+
+  it('offsets a straight horizontal path fully covered by a matching shift', () => {
+    const path = [{ x: 0, y: 50 }, { x: 100, y: 50 }]
+    const shifts = [{ axis: 'h' as const, fixed: 50, start: 0, end: 100, offset: 4 }]
+    const result = pathWithLaneOffsets(path, shifts)
+    // The jog-in/jog-out points sit at the segment's own start/end (offset
+    // 0) right before/after the offset-line points — harmless zero-length
+    // duplicates of the true endpoints when the shift covers the whole
+    // segment, not a bug (Konva renders a degenerate sub-segment invisibly).
+    expect(result).toEqual([
+      { x: 0, y: 50 },
+      { x: 0, y: 50 },
+      { x: 0, y: 54 },
+      { x: 100, y: 54 },
+      { x: 100, y: 50 },
+      { x: 100, y: 50 },
+    ])
+  })
+
+  it('leaves a segment untouched when no shift matches its axis/fixed coordinate', () => {
+    const path = [{ x: 0, y: 50 }, { x: 100, y: 50 }]
+    const shifts = [{ axis: 'h' as const, fixed: 999, start: 0, end: 100, offset: 4 }]
+    expect(pathWithLaneOffsets(path, shifts)).toEqual(path)
+  })
+
+  it('only offsets the portion of a segment inside the shift range, jogging in and out', () => {
+    // Segment from x=0 to x=100 at y=50; shift only covers x=60..100.
+    const path = [{ x: 0, y: 50 }, { x: 100, y: 50 }]
+    const shifts = [{ axis: 'h' as const, fixed: 50, start: 60, end: 100, offset: 4 }]
+    const result = pathWithLaneOffsets(path, shifts)
+    expect(result[0]).toEqual({ x: 0, y: 50 })
+    expect(result[result.length - 1]).toEqual({ x: 100, y: 50 })
+    // Somewhere in the middle the path must reach the offset line.
+    expect(result.some((p) => Math.abs(p.y - 54) < 1e-6)).toBe(true)
+    // And a point before the shift's start must stay on the original line.
+    expect(result.some((p) => p.x <= 60 && Math.abs(p.y - 50) < 1e-6)).toBe(true)
+  })
+
+  it('handles a vertical segment the same way', () => {
+    const path = [{ x: 50, y: 0 }, { x: 50, y: 100 }]
+    const shifts = [{ axis: 'v' as const, fixed: 50, start: 0, end: 100, offset: -3 }]
+    const result = pathWithLaneOffsets(path, shifts)
+    expect(result).toEqual([
+      { x: 50, y: 0 },
+      { x: 50, y: 0 },
+      { x: 47, y: 0 },
+      { x: 47, y: 100 },
+      { x: 50, y: 100 },
+      { x: 50, y: 100 },
+    ])
   })
 })
